@@ -6,7 +6,7 @@ module Quantikz
 using Base.Filesystem
 using Pkg.Artifacts
 
-export CNOT, CPHASE, H, P, Id, U, ControlU,
+export CNOT, CPHASE, H, P, Id, U, ControlU, SWAP,
        Measurement, ParityMeasurement,
        circuit2table, table2string,
        circuit2string,
@@ -28,7 +28,7 @@ struct CNOT <: QuantikzOp
     target::Integer
 end
 
-maxqubit(cnot::CNOT) = max(cnot.control,cnot.target)
+affectedqubits(cnot::CNOT) = [cnot.control,cnot.target]
 function update_table!(table,step,cnot::CNOT)
     table[cnot.control,step] = "\\ctrl{$(cnot.target-cnot.control)}"
     table[cnot.target ,step] = "\\targ{}"
@@ -40,10 +40,22 @@ struct CPHASE <: QuantikzOp
     target2::Integer
 end
 
-maxqubit(cphase::CPHASE) = max(cphase.target1,cphase.target2)
+affectedqubits(cphase::CPHASE) = [cphase.target1,cphase.target2]
 function update_table!(table,step,cphase::CPHASE)
     table[cphase.target1,step] = "\\ctrl{$(cphase.target2-cphase.target1)}"
     table[cphase.target2,step] = "\\control{}"
+    table
+end
+
+struct SWAP <: QuantikzOp
+    target1::Integer
+    target2::Integer
+end
+
+affectedqubits(s::SWAP) = [s.target1,s.target2]
+function update_table!(table,step,s::SWAP)
+    table[s.target1,step] = "\\swap{$(s.target2-s.target1)}"
+    table[s.target2,step] = "\\targX{}"
     table
 end
 
@@ -52,7 +64,7 @@ struct U <: QuantikzOp
     target::Integer
 end
 
-maxqubit(u::U) = u.target
+affectedqubits(u::U) = [u.target]
 function update_table!(table,step,u::U)
     table[u.target,step] = "\\gate{$(u.str)}"
     table
@@ -65,7 +77,7 @@ struct Id <: QuantikzOp
     target::Integer
 end
 
-maxqubit(i::Id) = i.target
+affectedqubits(i::Id) = [i.target]
 function update_table!(table,step,i::Id)
     table[i.target,step] = "\\qw"
     table
@@ -78,7 +90,7 @@ end
 
 Measurement(i::Integer) = Measurement("",i)
 
-maxqubit(m::Measurement) = m.target
+affectedqubits(m::Measurement) = [m.target]
 function update_table!(table,step,meas::Measurement)
     table[meas.target,step] = "\\meterD{$(meas.str)}"
     table[meas.target,step+1:end] .= ""
@@ -90,7 +102,7 @@ struct ParityMeasurement <: QuantikzOp
     qubits::AbstractVector{Integer}
 end
 
-maxqubit(pm::ParityMeasurement) = maximum(pm.qubits)
+affectedqubits(pm::ParityMeasurement) = pm.qubits
 function update_table!(table,step,meas::ParityMeasurement)
     qubits = meas.qubits
     paulis = meas.paulis
@@ -107,10 +119,12 @@ function update_table!(table,step,meas::ParityMeasurement)
     table
 end
 
-function circuit2table(circuit, qubits)
-    steps = length(circuit)+2
-    table = fill(raw"\qw",qubits,steps)
-    current_step = 2
+const PADDING = 1
+
+function circuit2table_expanded(circuit, qubits)
+    steps = length(circuit)
+    table = fill(raw"\qw",qubits,steps+2*PADDING)
+    current_step = 1+PADDING
     for op in circuit
         update_table!(table,current_step,op)
         current_step+=1
@@ -118,15 +132,39 @@ function circuit2table(circuit, qubits)
     return table
 end
 
-circuit2table(circuit) = circuit2table(circuit, maximum([maxqubit(o) for o in circuit]))
+function circuit2table_compressed(circuit, qubits)
+    steps = length(circuit)
+    table = fill(raw"\qw",qubits,steps+2*PADDING)
+    filled_up_to = fill(1+PADDING,qubits)
+    for op in circuit
+        qubits = affectedqubits(op)
+        current_step = maximum(filled_up_to[qubits])
+        update_table!(table,current_step,op)
+        l,h = extrema(qubits)
+        filled_up_to[l:h] .= current_step+1
+    end
+    return table[:,1:maximum(filled_up_to)-1+PADDING]
+end
+
+function circuit2table(circuit, qubits; mode=:compressed)
+    if mode==:compressed
+        return circuit2table_compressed(circuit, qubits)
+    elseif mode==:expanded
+        return circuit2table_expanded(circuit, qubits)
+    else
+        throw("Unknown mode: must be `:compressed` or `:expanded`!")
+    end
+end
+
+circuit2table(circuit; kw...) = circuit2table(circuit, maximum([maximum(affectedqubits(o)) for o in circuit]); kw...)
 
 function table2string(table)
     lstr = join([join(row," & ") for row in eachrow(table)], "\\\\\n")
     return "\\begin{quantikz}\n$(lstr)\n\\end{quantikz}"
 end
 
-circuit2string(circuit, qubits) = table2string(circuit2table(circuit, qubits))
-circuit2string(circuit) = table2string(circuit2table(circuit))
+circuit2string(circuit, qubits; kw...) = table2string(circuit2table(circuit, qubits; kw...))
+circuit2string(circuit; kw...) = table2string(circuit2table(circuit; kw...))
 
 function string2png(string)
     dir = mktempdir()
@@ -148,14 +186,14 @@ function string2png(string)
     end
 end
 
-circuit2png(circuit, qubits) = string2png(table2string(circuit2table(circuit, qubits)))
-circuit2png(circuit) = string2png(table2string(circuit2table(circuit)))
+circuit2png(circuit, qubits; kw...) = string2png(table2string(circuit2table(circuit, qubits; kw...)))
+circuit2png(circuit; kw...) = string2png(table2string(circuit2table(circuit; kw...)))
 
-displaycircuit(circuit, qubits) = display(MIME"image/png"(),circuit2png(circuit,qubits))
-displaycircuit(circuit) = display(MIME"image/png"(),circuit2png(circuit))
+displaycircuit(circuit, qubits; kw...) = display(MIME"image/png"(),circuit2png(circuit,qubits; kw...))
+displaycircuit(circuit; kw...) = display(MIME"image/png"(),circuit2png(circuit; kw...))
 
-function savepng(circuit,qubits,filename) # TODO remove duplicated code
-    string = circuit2string(circuit,qubits)
+function savepng(circuit,qubits,filename; kw...) # TODO remove duplicated code
+    string = circuit2string(circuit,qubits; kw...)
     dir = mktempdir()
     cp(quantikzfile, joinpath(dir,quantikzname))
     template = """
@@ -175,10 +213,10 @@ function savepng(circuit,qubits,filename) # TODO remove duplicated code
     cp(joinpath(dir,"input.png"), filename)
 end
 
-savepng(circuit, filename) = savepng(circuit, maximum([maxqubit(o) for o in circuit]), filename)
+savepng(circuit, filename; kw...) = savepng(circuit, maximum([maximum(affectedqubits(o)) for o in circuit]), filename; kw...)
 
-function savepdf(circuit,qubits,filename) # TODO remove duplicated code
-    string = circuit2string(circuit,qubits)
+function savepdf(circuit,qubits,filename; kw...) # TODO remove duplicated code
+    string = circuit2string(circuit,qubits; kw...)
     dir = mktempdir()
     cp(quantikzfile, joinpath(dir,quantikzname))
     template = """
@@ -198,15 +236,15 @@ function savepdf(circuit,qubits,filename) # TODO remove duplicated code
     cp(joinpath(dir,"input.png"), filename)
 end
 
-savepdf(circuit, filename) = savepdf(circuit, maximum([maxqubit(o) for o in circuit]), filename)
+savepdf(circuit, filename; kw...) = savepdf(circuit, maximum([maximum(affectedqubits(o)) for o in circuit]), filename; kw...)
 
-function savetex(circuit,qubits,filename)
-    string = circuit2string(circuit,qubits)
+function savetex(circuit,qubits,filename; kw...)
+    string = circuit2string(circuit,qubits; kw...)
     f = open(filename, "w")
     print(f,string)
     close(f)
 end
 
-savetex(circuit, filename) = savetex(circuit, maximum([maxqubit(o) for o in circuit]), filename)
+savetex(circuit, filename; kw...) = savetex(circuit, maximum([maximum(affectedqubits(o)) for o in circuit]), filename; kw...)
 
 end
