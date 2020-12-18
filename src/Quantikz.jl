@@ -15,7 +15,7 @@ export CNOT, CPHASE, H, P, Id, U, ControlU,
        savepng, savepdf, savetex
 
 quantikzname = "tikzlibraryquantikz.code.tex"
-quantikzfile = joinpath(artifact"quantikz", quantikzname)
+quantikzfile = joinpath(artifact"quantikz", "quantikz-0.9.6", quantikzname)
 
 abstract type QuantikzOp end
 
