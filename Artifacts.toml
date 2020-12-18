@@ -2,4 +2,5 @@
 git-tree-sha1 = "59bd25ce725193640c681e9d92a530608a95010d"
 
     [[quantikz.download]]
-    url = "http://mirror.ctan.org/graphics/pgf/contrib/quantikz/tikzlibraryquantikz.code.tex"
+    sha256 = "5cbc347a5a6200cf22dd356ac77027ca164a2551857365b532e9c4a370c51599"
+    url = "https://raw.githubusercontent.com/Krastanov/Quantikz/96ee3c00c2b7a097ade1570f22e099f7a1d9a6bc/artifacts/quantikz-0.9.6/tikzlibraryquantikz.code.tex"
