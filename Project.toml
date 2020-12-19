@@ -1,7 +1,7 @@
 name = "Quantikz"
 uuid = "b0d11df0-eea3-4d79-b4a5-421488cbf74b"
 authors = ["Stefan Krastanov <stefan@krastanov.org>"]
-version = "0.1.0"
+version = "0.2.0"
 
 [deps]
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"

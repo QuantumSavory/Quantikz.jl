@@ -11,6 +11,8 @@ To install it use:
 ] add Quantikz
 ```
 
+See the [attached notebook](https://github.com/Krastanov/Quantikz/blob/main/Quantikz.ipynb) for examples.
+
 If you have the `quantikz` and `standalone` TeX libraries installed, with working `pdflatex` and `convert` binaries accessible, the use of this package is as simple as:
 
 ```julia
