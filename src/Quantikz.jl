@@ -6,7 +6,7 @@ module Quantikz
 using Base.Filesystem
 using Pkg.Artifacts
 
-export CNOT, CPHASE, H, P, Id, U, ControlU, SWAP,
+export MultiControl, CNOT, CPHASE, SWAP, H, P, Id, U,
        Measurement, ParityMeasurement,
        circuit2table, table2string,
        circuit2string,
@@ -23,39 +23,34 @@ function update_table!(table,step,op)
     update_table!(table,step,QuantikzOp(op))
 end
 
-struct CNOT <: QuantikzOp
-    control::Integer
-    target::Integer
+struct MultiControl <: QuantikzOp
+    control::AbstractVector{Integer}
+    ocontrol::AbstractVector{Integer}
+    target::AbstractVector{Integer}
+    targetX::AbstractVector{Integer}
 end
 
-affectedqubits(cnot::CNOT) = [cnot.control,cnot.target]
-function update_table!(table,step,cnot::CNOT)
-    table[cnot.control,step] = "\\ctrl{$(cnot.target-cnot.control)}"
-    table[cnot.target ,step] = "\\targ{}"
-    table
-end
+CNOT(c::Integer,t::Integer) = MultiControl([c],[],[t],[])
+CPHASE(t1::Integer,t2::Integer) = MultiControl([t1,t2],[],[],[])
+SWAP(t1::Integer,t2::Integer) = MultiControl([],[],[],[t1,t2])
 
-struct CPHASE <: QuantikzOp
-    target1::Integer
-    target2::Integer
-end
-
-affectedqubits(cphase::CPHASE) = [cphase.target1,cphase.target2]
-function update_table!(table,step,cphase::CPHASE)
-    table[cphase.target1,step] = "\\ctrl{$(cphase.target2-cphase.target1)}"
-    table[cphase.target2,step] = "\\control{}"
-    table
-end
-
-struct SWAP <: QuantikzOp
-    target1::Integer
-    target2::Integer
-end
-
-affectedqubits(s::SWAP) = [s.target1,s.target2]
-function update_table!(table,step,s::SWAP)
-    table[s.target1,step] = "\\swap{$(s.target2-s.target1)}"
-    table[s.target2,step] = "\\targX{}"
+affectedqubits(g::MultiControl) = [g.control...,g.ocontrol...,g.target...,g.targetX...]
+function update_table!(table,step,g::MultiControl) # TODO displaycircuit([CNOT([1,4],[3],[2,5])]) has bad ocircle covered by line and a disconnected target
+    control = g.control
+    ocontrol = g.ocontrol
+    target = g.target
+    targetX = g.targetX
+    controls = sort([
+        [("\\ctrl",i) for i in control]...,
+        [("\\octrl",i) for i in ocontrol]...,
+        [("\\targ{}\\vqw",i) for i in target]...,
+        [("\\swap",i) for i in targetX]...
+        ], by=e->e[2])
+    startpoint = controls[1][2]
+    for (str, i) in controls
+        table[i,step] = str*"{$(startpoint-i)}"
+        startpoint = i
+    end
     table
 end
 

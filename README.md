@@ -49,6 +49,10 @@ julia> circuit2table([CNOT(1,2),CNOT(2,3)])
 
 `CNOT`, `CPHASE`, `SWAP`, `H`, `P`, `Id`, a generic single qubit gate `U`, a generic measurement `Measurement`, and a parity check measurement `ParityMeasurement`.
 
+The general purpose `MultiControl(controls, ocontrols, targets, targetXs)` can be used to create an arbitrary combination of muticontrol multiqubit gates. Each argument lists the indices of qubits that should get a certain symbol: `controls` is filled circles, `ocontrols` is empty circles, `targets` is the NOT symbol, and `targetXs` is the X symbols.
+
+Controlled `U` gates are not implemented yet.
+
 ## Custom objects
 
 For your `CustomQuantumOperation` simply define a `QuantikzOp(op::CustomQuantumOperation)` that converts your object to one of the built-in objects.
