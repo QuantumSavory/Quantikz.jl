@@ -7,6 +7,7 @@ using Base.Filesystem
 using Pkg.Artifacts
 
 export MultiControl, CNOT, CPHASE, SWAP, H, P, Id, U,
+       MultiControlU,
        Measurement, ParityMeasurement,
        circuit2table, table2string,
        circuit2string,
@@ -50,6 +51,55 @@ function update_table!(table,step,g::MultiControl) # TODO displaycircuit([CNOT([
     for (str, i) in controls
         table[i,step] = str*"{$(startpoint-i)}"
         startpoint = i
+    end
+    table
+end
+
+struct MultiControlU <: QuantikzOp
+    str::AbstractString
+    control::AbstractVector{Integer}
+    ocontrol::AbstractVector{Integer}
+    target::AbstractVector{Integer}
+end
+
+MultiU(str::AbstractString, target::AbstractVector{Integer}) = MultiControlU(str,[],[],target)
+
+affectedqubits(g::MultiControlU) = [g.control...,g.ocontrol...,g.target...]
+function update_table!(table,step,g::MultiControlU) # TODO displaycircuit([CNOT([1,4],[3],[2,5])]) has bad ocircle covered by line and a disconnected target
+    control = g.control
+    ocontrol = g.ocontrol
+    target = g.target
+    controls = sort([
+        [("\\ctrl",i) for i in control]...,
+        [("\\octrl",i) for i in ocontrol]...,
+        ], by=e->e[2])
+    m,M = extrema(target)
+    if length(controls)==0
+        startpoint = M
+    else
+        startpoint = min(M,controls[1][2])
+    end
+    offset = iseven(M-m) && (m+M)/2 ∉ target ? ",label style={yshift=0.2cm}" : ""
+    table[m,step] = "\\gate[$(M-m+1)$(offset)]{$(g.str)}"
+    for i in m+1:M
+        if i ∉ target
+            table[i,step] = "\\linethrough"
+        else
+            table[i,step] = ""
+        end
+    end
+    for (str, i) in controls
+        if i > M
+            if startpoint < m
+                table[m,step] *= "\\vqw{$(startpoint-m)}"
+            end
+            startpoint = M
+        end
+        table[i,step] = str*"{$(startpoint-i)}"
+        startpoint = i
+    end
+    if startpoint < m
+        table[m,step] *= "\\vqw{$(startpoint-m)}"
     end
     table
 end
@@ -155,7 +205,7 @@ circuit2table(circuit; kw...) = circuit2table(circuit, maximum([maximum(affected
 
 function table2string(table)
     lstr = join([join(row," & ") for row in eachrow(table)], "\\\\\n")
-    return "\\begin{quantikz}\n$(lstr)\n\\end{quantikz}"
+    return "\\begin{quantikz}[transparent]\n$(lstr)\n\\end{quantikz}"
 end
 
 circuit2string(circuit, qubits; kw...) = table2string(circuit2table(circuit, qubits; kw...))
