@@ -163,6 +163,27 @@ function update_table!(table,step,meas::ParityMeasurement)
     table
 end
 
+struct Noise <: QuantikzOp
+    qubits::AbstractVector{Integer}
+end
+
+affectedqubits(n::Noise) = n.qubits
+function update_table!(table,step,n::Noise)
+    for q in n.qubits
+        table[q,step] = "\\gate[1,style={starburst,starburst points=7,inner xsep=-2pt,inner ysep=-2pt,scale=0.5}]{}"
+    end
+    table
+end
+
+struct NoiseAll <: QuantikzOp
+end
+
+affectedqubits(n::NoiseAll) = :all
+function update_table!(table,step,n::NoiseAll)
+    table[:,step] .= ["\\gate[1,style={starburst,starburst points=7,inner xsep=-2pt,inner ysep=-2pt,scale=0.5}]{}"]
+    table
+end
+
 const PADDING = 1
 
 function circuit2table_expanded(circuit, qubits)
