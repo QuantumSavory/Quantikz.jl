@@ -207,10 +207,10 @@ function circuit2table_compressed(circuit, qubits)
             current_step = maximum(filled_up_to)
             filled_up_to .= current_step+1
         else
-        current_step = maximum(filled_up_to[qubits])
-        l,h = extrema(qubits)
-        filled_up_to[l:h] .= current_step+1
-    end
+            current_step = maximum(filled_up_to[qubits])
+            l,h = extrema(qubits)
+            filled_up_to[l:h] .= current_step+1
+        end
         update_table!(table,current_step,op)
     end
     return table[:,1:maximum(filled_up_to)-1+PADDING]
