@@ -5,6 +5,7 @@ module Quantikz
 
 using Base.Filesystem
 using Pkg.Artifacts
+using Suppressor
 
 export MultiControl, CNOT, CPHASE, SWAP, H, P, Id, U,
        MultiControlU,
@@ -252,7 +253,7 @@ function string2png(string)
         f = open("input.tex", "w")
         print(f,template)
         close(f)
-        read(`pdflatex -shell-escape input.tex`)
+        @suppress read(`pdflatex -shell-escape input.tex`)
         return read("input.png")
     end
 end
@@ -279,7 +280,7 @@ function savepng(circuit,qubits,filename; kw...) # TODO remove duplicated code
         f = open("input.tex", "w")
         print(f,template)
         close(f)
-        read(`pdflatex -shell-escape input.tex`)
+        @suppress read(`pdflatex -shell-escape input.tex`)
     end
     cp(joinpath(dir,"input.png"), filename)
 end
@@ -302,7 +303,7 @@ function savepdf(circuit,qubits,filename; kw...) # TODO remove duplicated code
         f = open("input.tex", "w")
         print(f,template)
         close(f)
-        read(`pdflatex input.tex`)
+        @suppress read(`pdflatex input.tex`)
     end
     cp(joinpath(dir,"input.png"), filename)
 end
