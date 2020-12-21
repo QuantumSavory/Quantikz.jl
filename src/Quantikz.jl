@@ -20,9 +20,8 @@ quantikzfile = joinpath(artifact"quantikz", "quantikz-0.9.6", quantikzname)
 
 abstract type QuantikzOp end
 
-function update_table!(table,step,op)
-    update_table!(table,step,QuantikzOp(op))
-end
+update_table!(table,step,op) = update_table!(table,step,QuantikzOp(op))
+affectedqubits(op) = affectedqubits(QuantikzOp(op))
 
 struct MultiControl <: QuantikzOp
     control::AbstractVector{Integer}
