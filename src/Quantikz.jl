@@ -182,10 +182,15 @@ function circuit2table_compressed(circuit, qubits)
     filled_up_to = fill(1+PADDING,qubits)
     for op in circuit
         qubits = affectedqubits(op)
+        if qubits==:all
+            current_step = maximum(filled_up_to)
+            filled_up_to .= current_step+1
+        else
         current_step = maximum(filled_up_to[qubits])
-        update_table!(table,current_step,op)
         l,h = extrema(qubits)
         filled_up_to[l:h] .= current_step+1
+    end
+        update_table!(table,current_step,op)
     end
     return table[:,1:maximum(filled_up_to)-1+PADDING]
 end
@@ -200,7 +205,8 @@ function circuit2table(circuit, qubits; mode=:compressed)
     end
 end
 
-circuit2table(circuit; kw...) = circuit2table(circuit, maximum([maximum(affectedqubits(o)) for o in circuit]); kw...)
+circuitwidth(circuit) = maximum([affectedqubits(o)==:all ? 1 : maximum(affectedqubits(o)) for o in circuit])
+circuit2table(circuit; kw...) = circuit2table(circuit, circuitwidth(circuit); kw...)
 
 function table2string(table)
     lstr = join([join(row," & ") for row in eachrow(table)], "\\\\\n")
@@ -257,7 +263,7 @@ function savepng(circuit,qubits,filename; kw...) # TODO remove duplicated code
     cp(joinpath(dir,"input.png"), filename)
 end
 
-savepng(circuit, filename; kw...) = savepng(circuit, maximum([maximum(affectedqubits(o)) for o in circuit]), filename; kw...)
+savepng(circuit, filename; kw...) = savepng(circuit, circuitwidth(circuit), filename; kw...)
 
 function savepdf(circuit,qubits,filename; kw...) # TODO remove duplicated code
     string = circuit2string(circuit,qubits; kw...)
@@ -280,7 +286,7 @@ function savepdf(circuit,qubits,filename; kw...) # TODO remove duplicated code
     cp(joinpath(dir,"input.png"), filename)
 end
 
-savepdf(circuit, filename; kw...) = savepdf(circuit, maximum([maximum(affectedqubits(o)) for o in circuit]), filename; kw...)
+savepdf(circuit, filename; kw...) = savepdf(circuit, circuitwidth(circuit), filename; kw...)
 
 function savetex(circuit,qubits,filename; kw...)
     string = circuit2string(circuit,qubits; kw...)
@@ -289,6 +295,6 @@ function savetex(circuit,qubits,filename; kw...)
     close(f)
 end
 
-savetex(circuit, filename; kw...) = savetex(circuit, maximum([maximum(affectedqubits(o)) for o in circuit]), filename; kw...)
+savetex(circuit, filename; kw...) = savetex(circuit, circuitwidth(circuit), filename; kw...)
 
 end
