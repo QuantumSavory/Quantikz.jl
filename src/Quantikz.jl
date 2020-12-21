@@ -142,7 +142,7 @@ function update_table!(table,step,meas::Measurement)
 end
 
 struct ParityMeasurement <: QuantikzOp
-    paulis::String
+    paulis::AbstractVector{String}
     qubits::AbstractVector{Integer}
 end
 
