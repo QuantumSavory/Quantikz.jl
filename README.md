@@ -3,7 +3,7 @@
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Krastanov/Quantikz/CI)](https://github.com/Krastanov/Quantikz/actions?query=workflow%3ACI+branch%3Amain)
 [![Test coverage from codecov](https://img.shields.io/codecov/c/gh/Krastanov/Quantikz?label=codecov)](https://codecov.io/gh/Krastanov/Quantikz)
 
-A minimal package for drawing quantum circuits using the `quantikz` and `tikz` TeX libraries. Only a small subset of the `quantikz` operations are currently implemented.
+A minimal package for drawing quantum circuits using the `quantikz` and `tikz` TeX libraries.
 
 To install it use:
 
@@ -35,6 +35,8 @@ circuit2string(circuit)
 savetex(circuit, filename)
 ```
 
+As mentioned, `quantikz`, `standalone`, `pdflatex`, and `convert` are required. You can get the first three by installing most up-to-date TeX distributions like `texlive`, just be sure to install the full distribution with all subpackages. `convert` is part of ImageMagick and is necessary for the pdf-to-png conversion. 
+
 If you need some of the more advanced features of the `quantikz` TeX macros that are not implemented here yet, you can edit the string directly, or more conveniently, you can generate the 2D array of macros that makes up the string:
 
 ```
@@ -55,12 +57,14 @@ The general purpose `MultiControl(controls, ocontrols, targets, targetXs)` can b
 
 For named controled gates use `MultiControlU(str, controls, ocontrols, targets)`.
 
+For noise events, you can use `Noise(targets)` or `NoiseAll()`.
+
 For examples of these operations, see the [attached notebook](https://github.com/Krastanov/Quantikz/blob/main/Quantikz.ipynb).
 
 ## Custom objects
 
 For your `CustomQuantumOperation` simply define a `QuantikzOp(op::CustomQuantumOperation)` that converts your object to one of the built-in objects.
 
-If you need more freedom for your custom quantum operation, simply define `update_table!(table,step,op::CustomQuantumOperation)` that directly modifies the `quantikz` table and define `affectedqubits(op::CustomQuantumOperation)` that gives the indices of qubits involved in the operation.
+If you need more freedom for your custom quantum operation, simply define `update_table!(table,step,op::CustomQuantumOperation)` that directly modifies the `quantikz` table and define `affectedqubits(op::CustomQuantumOperation)` that gives the indices of qubits involved in the operation. Instead of returning an array of indices `affectedqubits` can also return the symbol `:all` which tells the layout engine that all qubits are used in this stage of the circuit.
 
 Internally, this library converts the array of circuit operations to a 2D array of `quantikz` macros which is then converted to a single TeX string, which is then compiled with a call to `pdflatex`.

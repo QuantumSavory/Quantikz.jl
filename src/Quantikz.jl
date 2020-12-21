@@ -10,6 +10,7 @@ using Suppressor
 export MultiControl, CNOT, CPHASE, SWAP, H, P, Id, U,
        MultiControlU,
        Measurement, ParityMeasurement,
+       Noise, NoiseAll,
        circuit2table, table2string,
        circuit2string,
        string2png,
@@ -179,7 +180,7 @@ end
 struct NoiseAll <: QuantikzOp
 end
 
-affectedqubits(n::NoiseAll) = :all
+affectedqubits(n::NoiseAll) = :all # TODO consider using EndpointRanges.jl
 function update_table!(table,step,n::NoiseAll)
     table[:,step] .= ["\\gate[1,style={starburst,starburst points=7,inner xsep=-2pt,inner ysep=-2pt,scale=0.5}]{}"]
     table
@@ -202,7 +203,7 @@ function circuit2table_compressed(circuit, qubits)
     steps = length(circuit)
     table = fill(raw"\qw",qubits,steps+2*PADDING)
     filled_up_to = fill(1+PADDING,qubits)
-    for op in circuit
+    for op in circuit # TODO consider using EndpointRanges.jl
         qubits = affectedqubits(op)
         if qubits==:all
             current_step = maximum(filled_up_to)
