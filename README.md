@@ -68,3 +68,9 @@ For your `CustomQuantumOperation` simply define a `QuantikzOp(op::CustomQuantumO
 If you need more freedom for your custom quantum operation, simply define `update_table!(table,step,op::CustomQuantumOperation)` that directly modifies the `quantikz` table and define `affectedqubits(op::CustomQuantumOperation)` that gives the indices of qubits involved in the operation. Instead of returning an array of indices `affectedqubits` can also return the symbol `:all` which tells the layout engine that all qubits are used in this stage of the circuit.
 
 Internally, this library converts the array of circuit operations to a 2D array of `quantikz` macros which is then converted to a single TeX string, which is then compiled with a call to `pdflatex`.
+
+## LaTeX-free alternatives
+
+If all you need is the LaTeX string to put in your manuscript, this library is sufficient: simply run `circuit2string` instead of `displaycircuit`.
+
+For rendering in a notebook, however, this library does require a `pdflatex` to be preinstalled (usually through the `texlive` distribution). An alternative is the [`YaoPlots.jl`](https://github.com/QuantumBFS/YaoPlots.jl) which can draw directly from Julia as it does not depend on external rendering sofware. `YaoPlots.jl` however does not support LaTeX yet.
