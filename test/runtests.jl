@@ -1,5 +1,7 @@
 using Quantikz, Test
 
+function stringtests()
+@testset "String conversions" begin
 circuit = [
            CNOT(1,2),CPHASE(2,3),
            CPHASE(4,5),
@@ -31,3 +33,41 @@ circuit = [
     Noise([2,4]),
 ]
 @test circuit2string(circuit) == "\\begin{quantikz}[transparent]\n\\qw & \\gate[1,style={starburst,starburst points=7,inner xsep=-2pt,inner ysep=-2pt,scale=0.5}]{} & \\gate{P} & \\gate[1,style={starburst,starburst points=7,inner xsep=-2pt,inner ysep=-2pt,scale=0.5}]{} & \\qw & \\qw & \\qw\\\\\n\\qw & \\qw & \\qw & \\gate[1,style={starburst,starburst points=7,inner xsep=-2pt,inner ysep=-2pt,scale=0.5}]{} & \\ctrl{0} & \\gate[1,style={starburst,starburst points=7,inner xsep=-2pt,inner ysep=-2pt,scale=0.5}]{} & \\qw\\\\\n\\qw & \\qw & \\qw & \\gate[1,style={starburst,starburst points=7,inner xsep=-2pt,inner ysep=-2pt,scale=0.5}]{} & \\gate[2]{U}\\vqw{-1} & \\qw & \\qw\\\\\n\\qw & \\qw & \\qw & \\gate[1,style={starburst,starburst points=7,inner xsep=-2pt,inner ysep=-2pt,scale=0.5}]{} &  & \\gate[1,style={starburst,starburst points=7,inner xsep=-2pt,inner ysep=-2pt,scale=0.5}]{} & \\qw\\\\\n\\qw & \\gate[1,style={starburst,starburst points=7,inner xsep=-2pt,inner ysep=-2pt,scale=0.5}]{} & \\qw & \\gate[1,style={starburst,starburst points=7,inner xsep=-2pt,inner ysep=-2pt,scale=0.5}]{} & \\qw & \\qw & \\qw\n\\end{quantikz}"
+end
+end
+
+function pdftests()
+@testset "Tectonic tests" begin
+    c1 = [
+        CNOT(2,1),
+        CPHASE(2,3),
+        H(4),P(5),
+        SWAP(5,6),
+        U("Gate",6),
+        Measurement(1),
+        Measurement("X",2)
+    ]
+    c2 = [
+        MultiControlU("U",[1,2],[3,8],[5,7]),
+        MultiControlU("U_a",[1,2],[],[4,5]),
+        MultiControlU("U_b",[7,8],[],[1,2,3]),
+        MultiControlU("U_c",[],[],[4,6])
+    ]
+    c3 = [
+        Noise([1,5]),
+        P(1),
+        NoiseAll(),
+        MultiControlU("U",[2],[],[3,4]),
+        Noise([2,4]),
+    ]
+    @test savepdf(c1,"c1.pdf") == "c1.pdf" # just check that it runs at all
+    @test savepdf(c2,"c2.pdf") == "c2.pdf" # just check that it runs at all
+    @test savepdf(c3,"c3.pdf") == "c3.pdf" # just check that it runs at all
+    rm("c1.pdf")
+    rm("c2.pdf")
+    rm("c3.pdf")
+end
+end
+
+stringtests()
+pdftests()
