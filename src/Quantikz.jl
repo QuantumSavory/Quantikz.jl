@@ -6,6 +6,7 @@ module Quantikz
 using Base.Filesystem
 using Pkg.Artifacts
 using Suppressor
+using Tectonic
 
 export MultiControl, CNOT, CPHASE, SWAP, H, P, Id, U,
        MultiControlU,
@@ -19,6 +20,10 @@ export MultiControl, CNOT, CPHASE, SWAP, H, P, Id, U,
 
 quantikzname = "tikzlibraryquantikz.code.tex"
 quantikzfile = joinpath(artifact"quantikz", "quantikz-0.9.6", quantikzname)
+
+macro trysuppress(expr)
+    :(try; @suppress($(esc(expr))); catch; @warn "Command failed... Retrying..."; $expr; end;)
+end
 
 abstract type QuantikzOp end
 
@@ -239,11 +244,11 @@ end
 circuit2string(circuit, qubits; kw...) = table2string(circuit2table(circuit, qubits; kw...))
 circuit2string(circuit; kw...) = table2string(circuit2table(circuit; kw...))
 
-function string2png(string)
+function string2png(string; dpi=500)
     dir = mktempdir()
     cp(quantikzfile, joinpath(dir,quantikzname))
     template = """
-    \\documentclass[convert={density=100}]{standalone}
+    \\documentclass[]{standalone}
     \\usepackage{tikz}
     \\usetikzlibrary{quantikz}
     \\begin{document}
@@ -254,23 +259,26 @@ function string2png(string)
         f = open("input.tex", "w")
         print(f,template)
         close(f)
-        @suppress read(`pdflatex -shell-escape input.tex`)
+        @trysuppress tectonic() do bin
+            run(`$bin input.tex`)
+        end
+        @trysuppress run(`convert -density $(dpi) input.pdf input.png`)
         return read("input.png")
     end
 end
 
-circuit2png(circuit, qubits; kw...) = string2png(table2string(circuit2table(circuit, qubits; kw...)))
-circuit2png(circuit; kw...) = string2png(table2string(circuit2table(circuit; kw...)))
+circuit2png(circuit, qubits; dpi=500, kw...) = string2png(table2string(circuit2table(circuit, qubits; kw...)); dpi=dpi)
+circuit2png(circuit; dpi=500, kw...) = string2png(table2string(circuit2table(circuit; kw...)); dpi=dpi)
 
-displaycircuit(circuit, qubits; kw...) = display(MIME"image/png"(),circuit2png(circuit,qubits; kw...))
-displaycircuit(circuit; kw...) = display(MIME"image/png"(),circuit2png(circuit; kw...))
+displaycircuit(circuit, qubits; dpi=100, kw...) = display(MIME"image/png"(),circuit2png(circuit,qubits; dpi=dpi, kw...))
+displaycircuit(circuit; dpi=100, kw...) = display(MIME"image/png"(),circuit2png(circuit; dpi=dpi, kw...))
 
-function savepng(circuit,qubits,filename; kw...) # TODO remove duplicated code
+function savepng(circuit,qubits,filename; dpi=500, kw...) # TODO remove duplicated code
     string = circuit2string(circuit,qubits; kw...)
     dir = mktempdir()
     cp(quantikzfile, joinpath(dir,quantikzname))
     template = """
-    \\documentclass[convert={density=100}]{standalone}
+    \\documentclass[]{standalone}
     \\usepackage{tikz}
     \\usetikzlibrary{quantikz}
     \\begin{document}
@@ -281,9 +289,12 @@ function savepng(circuit,qubits,filename; kw...) # TODO remove duplicated code
         f = open("input.tex", "w")
         print(f,template)
         close(f)
-        @suppress read(`pdflatex -shell-escape input.tex`)
+        @trysuppress tectonic() do bin
+            run(`$bin input.tex`)
+        end
+        @trysuppress run(`convert -density $(dpi) input.pdf input.png`)
     end
-    cp(joinpath(dir,"input.png"), filename)
+    cp(joinpath(dir,"input.png"), filename, force=true)
 end
 
 savepng(circuit, filename; kw...) = savepng(circuit, circuitwidth(circuit), filename; kw...)
@@ -304,9 +315,11 @@ function savepdf(circuit,qubits,filename; kw...) # TODO remove duplicated code
         f = open("input.tex", "w")
         print(f,template)
         close(f)
-        @suppress read(`pdflatex input.tex`)
+        @trysuppress tectonic() do bin
+            run(`$bin input.tex`)
+        end
     end
-    cp(joinpath(dir,"input.png"), filename)
+    cp(joinpath(dir,"input.pdf"), filename, force=true)
 end
 
 savepdf(circuit, filename; kw...) = savepdf(circuit, circuitwidth(circuit), filename; kw...)

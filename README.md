@@ -13,14 +13,20 @@ To install it use:
 
 See the [attached notebook](https://github.com/Krastanov/Quantikz/blob/main/Quantikz.ipynb) for examples.
 
-If you have the `quantikz` and `standalone` TeX libraries installed, with working `pdflatex` and `convert` binaries accessible, the use of this package is as simple as:
+- This library can generate `tex` files with the markup necessary for a given circuit.
+- Creating `pdf` files is possible (using the `Tectonic.jl` package so you do not even need to pre-install a `TeX` distribution).
+- If you have the `convert` command available on your system, `png` files can also be generated directly. In that case the interactive use of this package is as simple as:
 
 ```julia
 circuit = [CNOT(1,2),Measurement(2)]
-displaycircuit(circuit)
+displaycircuit(circuit) # you can set a DPI parameter
 ```
 
-`quantikz` is automatically downloaded if you do not have it installed.
+To save a `png` use:
+
+```julia
+savepng(circuit, filename) # you can set a DPI parameter
+```
 
 If you do not have a working version of `convert` (which has been problematic on a number of recent operating systems), you can still generate a PDF containing the circuit with:
 
@@ -28,14 +34,12 @@ If you do not have a working version of `convert` (which has been problematic on
 savepdf(circuit, filename)
 ```
 
-If you do not have a functional TeX environment you can still view the corresponding TeX string or save it to file with:
+You can still view the corresponding TeX string or save it to file with:
 
 ```julia
 circuit2string(circuit)
 savetex(circuit, filename)
 ```
-
-As mentioned, `quantikz`, `standalone`, `pdflatex`, and `convert` are required. You can get the first three by installing most up-to-date TeX distributions like `texlive`, just be sure to install the full distribution with all subpackages. `convert` is part of ImageMagick and is necessary for the pdf-to-png conversion. 
 
 If you need some of the more advanced features of the `quantikz` TeX macros that are not implemented here yet, you can edit the string directly, or more conveniently, you can generate the 2D array of macros that makes up the string:
 
@@ -73,4 +77,4 @@ Internally, this library converts the array of circuit operations to a 2D array 
 
 If all you need is the LaTeX string to put in your manuscript, this library is sufficient: simply run `circuit2string` instead of `displaycircuit`.
 
-For rendering in a notebook, however, this library does require a `pdflatex` to be preinstalled (usually through the `texlive` distribution). An alternative is the [`YaoPlots.jl`](https://github.com/QuantumBFS/YaoPlots.jl) which can draw directly from Julia as it does not depend on external rendering sofware. `YaoPlots.jl` however does not support LaTeX yet.
+For rendering in a notebook, however, this library does require a `convert` binary to be preinstalled. An alternative is the [`YaoPlots.jl`](https://github.com/QuantumBFS/YaoPlots.jl) which can draw directly from Julia as it does not depend on external rendering sofware. `YaoPlots.jl` however does not support LaTeX yet.
