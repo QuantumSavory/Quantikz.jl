@@ -1,7 +1,7 @@
 name = "Quantikz"
 uuid = "b0d11df0-eea3-4d79-b4a5-421488cbf74b"
 authors = ["Stefan Krastanov <stefan@krastanov.org>"]
-version = "0.4.0-DEV"
+version = "0.4.0"
 
 [deps]
 ImageMagick_jll = "c73af94c-d91f-53ed-93a7-00f77d67a9d7"
