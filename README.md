@@ -13,9 +13,7 @@ To install it use:
 
 See the [attached notebook](https://github.com/Krastanov/Quantikz/blob/main/Quantikz.ipynb) for examples.
 
-- This library can generate `tex` files with the markup necessary for a given circuit.
-- Creating `pdf` files is possible (using the `Tectonic.jl` package so you do not even need to pre-install a `TeX` distribution).
-- If you have the `convert` command available on your system, `png` files can also be generated directly. In that case the interactive use of this package is as simple as:
+The library can generate `tex`, `pdf`, and `png` files, as well as live previews.  It does not require any system packages (the `tex` and image manipulation dependencies are handled by Julia, with `Tectonic.jl` and `ImageMagick_jll.jl`). 
 
 ```julia
 circuit = [CNOT(1,2),Measurement(2)]

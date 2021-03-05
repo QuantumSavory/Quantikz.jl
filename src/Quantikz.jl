@@ -7,6 +7,7 @@ using Base.Filesystem
 using Pkg.Artifacts
 using Suppressor
 using Tectonic
+using ImageMagick_jll
 
 export MultiControl, CNOT, CPHASE, SWAP, H, P, Id, U,
        MultiControlU,
@@ -262,7 +263,9 @@ function string2png(string; dpi=500)
         @trysuppress tectonic() do bin
             run(`$bin input.tex`)
         end
-        @trysuppress run(`convert -density $(dpi) input.pdf input.png`)
+        @trysuppress imagemagick_convert() do bin
+            run(`$bin -density $(dpi) input.pdf input.png`)
+        end
         return read("input.png")
     end
 end
@@ -292,7 +295,9 @@ function savepng(circuit,qubits,filename; dpi=500, kw...) # TODO remove duplicat
         @trysuppress tectonic() do bin
             run(`$bin input.tex`)
         end
-        @trysuppress run(`convert -density $(dpi) input.pdf input.png`)
+        @trysuppress imagemagick_convert() do bin
+            run(`$bin -density $(dpi) input.pdf input.png`)
+        end
     end
     cp(joinpath(dir,"input.png"), filename, force=true)
 end

@@ -4,11 +4,13 @@ authors = ["Stefan Krastanov <stefan@krastanov.org>"]
 version = "0.4.0-DEV"
 
 [deps]
+ImageMagick_jll = "c73af94c-d91f-53ed-93a7-00f77d67a9d7"
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 Suppressor = "fd094767-a336-5f1f-9728-57cf17d0bbfb"
 Tectonic = "9ac5f52a-99c6-489f-af81-462ef484790f"
 
 [compat]
 julia = "1.3"
+ImageMagick_jll = "6.9"
 Suppressor = "0.2"
 Tectonic = "0.4"

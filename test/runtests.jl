@@ -36,8 +36,8 @@ circuit = [
 end
 end
 
-function pdftests()
-@testset "Tectonic tests" begin
+function filetests()
+@testset "Tectonic and ImageMagick tests" begin
     c1 = [
         CNOT(2,1),
         CPHASE(2,3),
@@ -60,14 +60,26 @@ function pdftests()
         MultiControlU("U",[2],[],[3,4]),
         Noise([2,4]),
     ]
+    @test savepdf(c1,"c1.tex") == "c1.tex" # just check that it runs at all
+    @test savepdf(c2,"c2.tex") == "c2.tex" # just check that it runs at all
+    @test savepdf(c3,"c3.tex") == "c3.tex" # just check that it runs at all
+    rm("c1.tex")
+    rm("c2.tex")
+    rm("c3.tex")
     @test savepdf(c1,"c1.pdf") == "c1.pdf" # just check that it runs at all
     @test savepdf(c2,"c2.pdf") == "c2.pdf" # just check that it runs at all
     @test savepdf(c3,"c3.pdf") == "c3.pdf" # just check that it runs at all
     rm("c1.pdf")
     rm("c2.pdf")
     rm("c3.pdf")
+    @test savepng(c1,"c1.png") == "c1.png" # just check that it runs at all
+    @test savepng(c2,"c2.png") == "c2.png" # just check that it runs at all
+    @test savepng(c3,"c3.png") == "c3.png" # just check that it runs at all
+    rm("c1.png")
+    rm("c2.png")
+    rm("c3.png")
 end
 end
 
 stringtests()
-pdftests()
+filetests()
