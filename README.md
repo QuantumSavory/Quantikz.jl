@@ -1,5 +1,6 @@
 # Quantikz.jl
 
+[![Documentation of latest stable version](https://img.shields.io/badge/docs-stable-blue.svg)](https://github.com/Krastanov/Quantikz/blob/main/Quantikz.ipynb)
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Krastanov/Quantikz/CI)](https://github.com/Krastanov/Quantikz/actions?query=workflow%3ACI+branch%3Amain)
 [![Test coverage from codecov](https://img.shields.io/codecov/c/gh/Krastanov/Quantikz?label=codecov)](https://codecov.io/gh/Krastanov/Quantikz)
 
@@ -13,38 +14,26 @@ To install it use:
 
 See the [attached notebook](https://github.com/Krastanov/Quantikz/blob/main/Quantikz.ipynb) for examples.
 
-The library can generate `tex`, `pdf`, and `png` files, as well as live previews.  It does not require any system packages (the `tex` and image manipulation dependencies are handled by Julia, with `Tectonic.jl`, `ImageMagick_jll.jl`, and `Ghostscript_jll.jl`). 
+The library can generate `tex`, `pdf`, and `png` files, as well as live previews. It does not require anything to be installed on your system (the `tex` and image manipulation dependencies are handled by Julia, with `Tectonic.jl` and `FileIO.jl`). If you want to generate another image type, simply use `FileIO`.
 
 ```julia
 circuit = [CNOT(1,2),Measurement(2)]
-displaycircuit(circuit) # you can set a DPI parameter
+displaycircuit(circuit) # you can set a scale parameter
 ```
 
 To save a png/pdf file:
 
 ```julia
-savepng(circuit, filename) # you can set a DPI parameter
-savepdf(circuit, filename)
+savecircuit(circuit, "file.png") # you can set a scale parameter
+savecircuit(circuit, "file.pdf")
 ```
 
 You can view the corresponding TeX string or save it to file with:
 
 ```julia
 circuit2string(circuit)
-savetex(circuit, filename)
+savetex(circuit, "file.tex")
 ```
-
-If you need some of the more advanced features of the `quantikz` TeX macros that are not implemented here yet, you can edit the string directly, or more conveniently, you can generate the 2D array of macros that makes up the string:
-
-```
-julia> circuit2table([CNOT(1,2),CNOT(2,3)])
-3×4 Array{String,2}:
- "\\qw"  "\\ctrl{1}"  "\\qw"       "\\qw"
- "\\qw"  "\\targ{}"   "\\ctrl{1}"  "\\qw"
- "\\qw"  "\\qw"       "\\targ{}"   "\\qw"
-```
-
-`table2string` can be used for the final conversion.
 
 ## Built-in quantum circuit operations
 
@@ -65,6 +54,20 @@ For your `CustomQuantumOperation` simply define a `QuantikzOp(op::CustomQuantumO
 If you need more freedom for your custom quantum operation, simply define `update_table!(table,step,op::CustomQuantumOperation)` that directly modifies the `quantikz` table and define `affectedqubits(op::CustomQuantumOperation)` that gives the indices of qubits involved in the operation. Instead of returning an array of indices `affectedqubits` can also return the symbol `:all` which tells the layout engine that all qubits are used in this stage of the circuit.
 
 Internally, this library converts the array of circuit operations to a 2D array of `quantikz` macros which is then converted to a single TeX string, which is then compiled with a call to `Tectonic.jl`.
+
+## Under the hood
+
+If you need some of the more advanced features of the `quantikz` TeX macros that are not implemented here yet, you can edit the string directly, or more conveniently, you can generate the 2D array of macros that makes up the string:
+
+```
+julia> circuit2table([CNOT(1,2),CNOT(2,3)])
+3×4 Array{String,2}:
+ "\\qw"  "\\ctrl{1}"  "\\qw"       "\\qw"
+ "\\qw"  "\\targ{}"   "\\ctrl{1}"  "\\qw"
+ "\\qw"  "\\qw"       "\\targ{}"   "\\qw"
+```
+
+`table2string` (and `string2image`) can be used for the final conversion.
 
 ### LaTeX-free alternatives
 

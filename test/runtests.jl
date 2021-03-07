@@ -37,7 +37,7 @@ end
 end
 
 function filetests()
-@testset "Tectonic and ImageMagick tests" begin
+@testset "Tectonic and FileIO tests" begin
     c1 = [
         CNOT(2,1),
         CPHASE(2,3),
@@ -60,21 +60,21 @@ function filetests()
         MultiControlU("U",[2],[],[3,4]),
         Noise([2,4]),
     ]
-    @test savepdf(c1,"c1.tex") == "c1.tex" # just check that it runs at all
-    @test savepdf(c2,"c2.tex") == "c2.tex" # just check that it runs at all
-    @test savepdf(c3,"c3.tex") == "c3.tex" # just check that it runs at all
+    @test savetex(c1,"c1.tex") === nothing # just check that it runs at all
+    @test savetex(c2,"c2.tex") === nothing # just check that it runs at all
+    @test savetex(c3,"c3.tex") === nothing # just check that it runs at all
+    @test savecircuit(c1,10,"c1.pdf",scale=0.5) === nothing # just check that it runs at all
+    @test savecircuit(c2,"c2.pdf",scale=1) === nothing # just check that it runs at all
+    @test savecircuit(c3,"c3.pdf",scale=5) === nothing # just check that it runs at all
+    @test savecircuit(c1,10,"c1.png",scale=0.5) === nothing # just check that it runs at all
+    @test savecircuit(c2,"c2.png",scale=1) === nothing # just check that it runs at all
+    @test savecircuit(c3,"c3.png",scale=5) === nothing # just check that it runs at all
     rm("c1.tex")
     rm("c2.tex")
     rm("c3.tex")
-    @test savepdf(c1,"c1.pdf") == "c1.pdf" # just check that it runs at all
-    @test savepdf(c2,"c2.pdf") == "c2.pdf" # just check that it runs at all
-    @test savepdf(c3,"c3.pdf") == "c3.pdf" # just check that it runs at all
     rm("c1.pdf")
     rm("c2.pdf")
     rm("c3.pdf")
-    @test savepng(c1,"c1.png") == "c1.png" # just check that it runs at all
-    @test savepng(c2,"c2.png") == "c2.png" # just check that it runs at all
-    @test savepng(c3,"c3.png") == "c3.png" # just check that it runs at all
     rm("c1.png")
     rm("c2.png")
     rm("c3.png")
