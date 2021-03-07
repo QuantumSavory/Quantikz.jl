@@ -278,7 +278,7 @@ function string2image(string; scale=5, kw...)
         #end
         if isnothing(savefile)
             @trysuppress gs() do bin
-                run(`$bin -dNOPAUSE -sDEVICE=pngalpha -dSAFER -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=2 -dTextAlphaBits=4 -dGraphicsAlphaBits=1 -sOutputFile=input.png input.pdf -dBATCH`)
+                run(`$bin -dNOPAUSE -sDEVICE=pngalpha -dSAFER -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=2 -dTextAlphaBits=4 -dGraphicsAlphaBits=1 -dDownScaleFactor=8 -r800 -sOutputFile=input.png input.pdf -dBATCH`)
             end
             return load("input.png")
         else
