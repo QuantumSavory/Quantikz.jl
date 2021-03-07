@@ -272,9 +272,14 @@ function string2image(string; scale=5)
         end
         gs() do bin
 	    println(bin)
+	    run(`cp $bin $(bin[1:end-4])`)
 	    try
 	        println("Try Get-Command")
 	        run(`Get-Command gs`)
+	    catch e
+	        @show e
+	    end
+	    try
 	        run(`Get-Command convert`)
 	    catch e
 	        @show e
@@ -282,13 +287,29 @@ function string2image(string; scale=5)
 	    try
 	        println("Try where")
 	        run(`where gs`)
+	    catch e
+	        @show e
+	    end
+	    try
 	        run(`where convert`)
+	    catch e
+	        @show e
+	    end
+	    try
+	        println("Try where with quotes")
+	        run(`where "gs"`)
 	    catch e
 	        @show e
 	    end
 	    try
 	        println("Try gs -h")
 	        run(`gs -h`)
+	    catch e
+	        @show e
+	    end
+	    try
+	        println("Try gs.exe -h")
+	        run(`gs.exe -h`)
 	    catch e
 	        @show e
 	    end
