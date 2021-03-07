@@ -271,9 +271,30 @@ function string2image(string; scale=5)
             run(`$bin input.tex`)
         end
         gs() do bin
-	    run(`Get-Command gs`)
-	    run(`Get-Command convert`)
+	    println(bin)
+	    try
+	        println("Try Get-Command")
+	        run(`Get-Command gs`)
+	        run(`Get-Command convert`)
+	    catch e
+	        @show e
+	    end
+	    try
+	        println("Try where")
+	        run(`where gs`)
+	        run(`where convert`)
+	    catch e
+	        @show e
+	    end
+	    try
+	        println("Try gs -h")
+	        run(`gs -h`)
+	    catch e
+	        @show e
+	    end
+	    println("Try convert")
 	    imagemagick_convert() do convert
+	        println(convert)
 	        run(`$convert -debug configure input.pdf out.png`)
 	    end
             return load("input.pdf")
