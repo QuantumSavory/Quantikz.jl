@@ -66,8 +66,6 @@ If you need more freedom for your custom quantum operation, simply define `updat
 
 Internally, this library converts the array of circuit operations to a 2D array of `quantikz` macros which is then converted to a single TeX string, which is then compiled with a call to `Tectonic.jl`.
 
-## LaTeX-free alternatives
+### LaTeX-free alternatives
 
-If all you need is the LaTeX string to put in your manuscript, this library is sufficient: simply run `circuit2string` instead of `displaycircuit`.
-
-For rendering in a notebook, however, this library does require a `convert` binary to be preinstalled. An alternative is the [`YaoPlots.jl`](https://github.com/QuantumBFS/YaoPlots.jl) which can draw directly from Julia as it does not depend on external rendering sofware. `YaoPlots.jl` however does not support LaTeX yet.
+An alternative is the [`YaoPlots.jl`](https://github.com/QuantumBFS/YaoPlots.jl) which can draw directly from Julia (does not shell out to ImageMagick and Ghostscript). `YaoPlots.jl` however does not support LaTeX.
