@@ -13,26 +13,21 @@ To install it use:
 
 See the [attached notebook](https://github.com/Krastanov/Quantikz/blob/main/Quantikz.ipynb) for examples.
 
-The library can generate `tex`, `pdf`, and `png` files, as well as live previews.  It does not require any system packages (the `tex` and image manipulation dependencies are handled by Julia, with `Tectonic.jl` and `ImageMagick_jll.jl`). 
+The library can generate `tex`, `pdf`, and `png` files, as well as live previews.  It does not require any system packages (the `tex` and image manipulation dependencies are handled by Julia, with `Tectonic.jl`, `ImageMagick_jll.jl`, and `Ghostscript_jll.jl`). 
 
 ```julia
 circuit = [CNOT(1,2),Measurement(2)]
 displaycircuit(circuit) # you can set a DPI parameter
 ```
 
-To save a `png` use:
+To save a png/pdf file:
 
 ```julia
 savepng(circuit, filename) # you can set a DPI parameter
-```
-
-If you do not have a working version of `convert` (which has been problematic on a number of recent operating systems), you can still generate a PDF containing the circuit with:
-
-```julia
 savepdf(circuit, filename)
 ```
 
-You can still view the corresponding TeX string or save it to file with:
+You can view the corresponding TeX string or save it to file with:
 
 ```julia
 circuit2string(circuit)
