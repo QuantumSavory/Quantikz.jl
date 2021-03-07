@@ -5,9 +5,11 @@ module Quantikz
 
 using Base.Filesystem
 using Pkg.Artifacts
+
+using FileIO
+using Ghostscript_jll
 using Suppressor
 using Tectonic
-using FileIO
 
 export MultiControl, CNOT, CPHASE, SWAP, H, P, Id, U,
        MultiControlU,
@@ -267,7 +269,9 @@ function string2image(string; scale=5)
         @trysuppress tectonic() do bin
             run(`$bin input.tex`)
         end
-        return load("input.pdf")
+        gs() do bin
+            return load("input.pdf")
+        end
     end
 end
 
