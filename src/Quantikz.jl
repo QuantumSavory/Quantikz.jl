@@ -295,7 +295,7 @@ function string2image(string; scale=5)
 	    println("Try convert")
 	    imagemagick_convert() do convert
 	        println(convert)
-	        run(`$convert -debug configure input.pdf out.png`)
+	        run(`$convert -debug all input.pdf out.png`)
 	    end
             return load("input.pdf")
         end
