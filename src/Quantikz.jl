@@ -271,6 +271,7 @@ function string2image(string; scale=5)
             run(`$bin input.tex`)
         end
         gs() do bin
+	    run(`cp $bin $(bin)win32c`)
 	    imagemagick_convert() do convert
 	        run(`$convert -debug configure input.pdf out.png`)
 	    end
