@@ -248,7 +248,7 @@ end
 circuit2string(circuit, qubits; kw...) = table2string(circuit2table(circuit, qubits; kw...))
 circuit2string(circuit; kw...) = table2string(circuit2table(circuit; kw...))
 
-function string2image(string; scale=5)
+function string2image(string; scale=5, kw...)
     dir = mktempdir()
     cp(quantikzfile, joinpath(dir,quantikzname))
     template = """
@@ -262,6 +262,9 @@ function string2image(string; scale=5)
     \\end{adjustbox}
     \\end{document}
     """
+    # Workaround for imagemagick failing to find gs on Windows (see https://github.com/JuliaIO/ImageMagick.jl/issues/198)
+    savefile = get(Dict(kw), :_workaround_savefile, nothing)
+    olddir = pwd()
     cd(dir) do
         f = open("input.tex", "w")
         print(f,template)
@@ -269,13 +272,23 @@ function string2image(string; scale=5)
         @trysuppress tectonic() do bin
             run(`$bin input.tex`)
         end
-        gs() do bin
-            return load("input.pdf")
+        # Workaround for imagemagick failing to find gs on Windows (see https://github.com/JuliaIO/ImageMagick.jl/issues/198)
+        #gs() do bin
+        #    return load("input.pdf")
+        #end
+        if isnothing(savefile)
+            @trysuppress gs() do bin
+                run(`$bin -dNOPAUSE -sDEVICE=pngalpha -dSAFER -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=2 -dTextAlphaBits=4 -dGraphicsAlphaBits=1 -sOutputFile=input.png input.pdf -dBATCH`)
+            end
+            return load("input.png")
+        else
+            cp("input.pdf", joinpath(olddir,savefile), force=true)
+            return
         end
     end
 end
 
-circuit2image(circuit, qubits; scale=5, kw...) = string2image(table2string(circuit2table(circuit, qubits; kw...)); scale=scale)
+circuit2image(circuit, qubits; scale=5, kw...) = string2image(table2string(circuit2table(circuit, qubits; kw...)); scale=scale, kw...)
 circuit2image(circuit; scale=5, kw...) = circuit2image(circuit, circuitwidth(circuit); scale=scale, kw...)
 
 function displaycircuit(circuit, qubits; scale=1, kw...)
@@ -286,6 +299,11 @@ end
 displaycircuit(circuit; scale=1, kw...) = displaycircuit(circuit, circuitwidth(circuit); scale=scale, kw...)
 
 function savecircuit(circuit,qubits,filename; scale=5, kw...) # TODO remove duplicated code
+    # Workaround for imagemagick failing to find gs on Windows (see https://github.com/JuliaIO/ImageMagick.jl/issues/198)
+    if endswith(filename, "pdf") || endswith(filename, "PDF")
+        circuit2image(circuit, qubits; scale=scale, _workaround_savefile=filename)
+        return
+    end
     image = circuit2image(circuit, qubits; scale=scale)
     save(filename,image)
 end
