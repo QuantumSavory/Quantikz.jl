@@ -10,6 +10,7 @@ ImageMagick = "6218d12a-5da1-5696-b52f-db25d2ecc6d1"
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 Suppressor = "fd094767-a336-5f1f-9728-57cf17d0bbfb"
 Tectonic = "9ac5f52a-99c6-489f-af81-462ef484790f"
+ImageMagick_jll = "c73af94c-d91f-53ed-93a7-00f77d67a9d7"
 
 [compat]
 julia = "1.3"
@@ -18,3 +19,4 @@ Ghostscript_jll = "9.53"
 ImageMagick = "1.1"
 Suppressor = "0.2"
 Tectonic = "0.4"
+ImageMagick_jll = "6.9"

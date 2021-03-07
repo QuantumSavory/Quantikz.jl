@@ -10,6 +10,7 @@ using FileIO
 using Ghostscript_jll
 using Suppressor
 using Tectonic
+using ImageMagick_jll
 
 export MultiControl, CNOT, CPHASE, SWAP, H, P, Id, U,
        MultiControlU,
@@ -270,6 +271,9 @@ function string2image(string; scale=5)
             run(`$bin input.tex`)
         end
         gs() do bin
+	    imagemagick_convert() do convert
+	        run(`$convert -debug configure input.pdf out.png`)
+	    end
             return load("input.pdf")
         end
     end
