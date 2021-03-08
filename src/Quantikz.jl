@@ -297,6 +297,11 @@ function displaycircuit(circuit, qubits; scale=1, kw...)
     display(MIME"image/png"(),read(seekstart(io)))
 end
 displaycircuit(circuit; scale=1, kw...) = displaycircuit(circuit, circuitwidth(circuit); scale=scale, kw...)
+function Base.show(io::IO, mime::MIME"image/png", circuit::AbstractVector{<:QuantikzOp}; scale=1, kw...)
+    save(Stream(format"PNG", io), circuit2image(circuit; scale=scale, kw...))
+end
+Base.show(io::IO, mime::MIME"image/png", gate::T; scale=1, kw...) where T<:QuantikzOp = show(io, mime, [gate]; scale=scale, kw...)
+
 
 function savecircuit(circuit,qubits,filename; scale=5, kw...) # TODO remove duplicated code
     # Workaround for imagemagick failing to find gs on Windows (see https://github.com/JuliaIO/ImageMagick.jl/issues/198)
