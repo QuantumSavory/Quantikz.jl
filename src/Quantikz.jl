@@ -139,16 +139,19 @@ function update_table!(table,step,i::Id)
 end
 
 struct Measurement <: QuantikzOp
-    str::AbstractString
-    target::Integer
+    strs::Vector{AbstractString}
+    targets::Vector{Integer}
 end
 
-Measurement(i::Integer) = Measurement("",i)
+Measurement(i::Integer) = Measurement([""],[i])
+Measurement(str::AbstractString, i::Integer) = Measurement([str],[i])
 
-affectedqubits(m::Measurement) = [m.target]
+affectedqubits(m::Measurement) = m.targets
 function update_table!(table,step,meas::Measurement)
-    table[meas.target,step] = "\\meterD{$(meas.str)}"
-    table[meas.target,step+1:end] .= ""
+    for (str, target) in zip(meas.strs, meas.targets)
+        table[target,step] = "\\meterD{$(str)}"
+        table[target,step+1:end] .= ""
+    end
     table
 end
 
