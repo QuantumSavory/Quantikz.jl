@@ -51,7 +51,15 @@ For examples of these operations, see the [attached notebook](https://github.com
 
 For your `CustomQuantumOperation` simply define a `QuantikzOp(op::CustomQuantumOperation)` that converts your object to one of the built-in objects.
 
-If you need more freedom for your custom quantum operation, simply define `update_table!(table,step,op::CustomQuantumOperation)` that directly modifies the `quantikz` table and define `affectedqubits(op::CustomQuantumOperation)` that gives the indices of qubits involved in the operation. Instead of returning an array of indices `affectedqubits` can also return the symbol `:all` which tells the layout engine that all qubits are used in this stage of the circuit.
+If you need more freedom for your custom quantum operation, simply define:
+- `update_table!(table,step,op::CustomQuantumOperation)` that directly modifies the `quantikz` table
+- `affectedqubits(op::CustomQuantumOperation)` that gives the indices of qubits involved in the operation.
+- (optional) `affectedbits(op)` that gives the indices of classical bits in use (empty by default)
+- (optional) `neededancillaries(op)` that gives the number of temporary ancillary qubits to reserve (0 by default)
+- (optional) `nsteps(op)` that gives the number of steps involved in the gate (1 by default)
+- (optional) `deleteoutputs(op)` that gives which qubits to be deleted, e.g., their lines removed (empty by default)
+
+Instead of returning an array of indices `affectedqubits` can also return the lazy slice `ibegin:iend` (from `EndpointRanges.jl`) which tells the layout engine that all qubits are used in this stage of the circuit.
 
 Internally, this library converts the array of circuit operations to a 2D array of `quantikz` macros which is then converted to a single TeX string, which is then compiled with a call to `Tectonic.jl`.
 
