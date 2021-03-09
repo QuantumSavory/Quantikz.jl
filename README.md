@@ -1,6 +1,7 @@
 # Quantikz.jl
 
-[![Documentation of latest stable version](https://img.shields.io/badge/docs-stable-blue.svg)](https://github.com/Krastanov/Quantikz/blob/main/doc/Quantikz.ipynb)
+[![Documentation of latest stable version](https://img.shields.io/badge/docs-stable-blue.svg)](https://krastanov.github.io/Quantikz/stable)
+[![Documentation of dev version](https://img.shields.io/badge/docs-dev-blue.svg)](https://krastanov.github.io/Quantikz/dev)
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Krastanov/Quantikz/CI)](https://github.com/Krastanov/Quantikz/actions?query=workflow%3ACI+branch%3Amain)
 [![Test coverage from codecov](https://img.shields.io/codecov/c/gh/Krastanov/Quantikz?label=codecov)](https://codecov.io/gh/Krastanov/Quantikz)
 
@@ -11,8 +12,6 @@ To install it use:
 ```julia
 ] add Quantikz
 ```
-
-See the [attached notebook](https://github.com/Krastanov/Quantikz/blob/main/doc/Quantikz.ipynb) for examples.
 
 The library can generate `tex`, `pdf`, and `png` files, as well as live previews. It does not require anything to be installed on your system (the `tex` and image manipulation dependencies are handled by Julia, with `Tectonic.jl` and `FileIO.jl`). If you want to generate another image type, simply use `FileIO`.
 
@@ -48,10 +47,10 @@ circuit = [
 ```
 
 In standard mode:
-![](./doc/example_compact.png)
+![](./docs/src/example_compact.png)
 
 And expanded for easier identification:
-![](./doc/example.png)
+![](./docs/src/example.png)
 
 ## Built-in quantum circuit operations
 

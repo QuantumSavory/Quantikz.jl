@@ -83,9 +83,9 @@ function filetests()
         MultiControlU("U",[2],[],[3,4]),
         Noise([2,4]),
     ]
-    @test savetex(c1,"c1.tex") === nothing # just check that it runs at all
-    @test savetex(c2,"c2.tex") === nothing # just check that it runs at all
-    @test savetex(c3,"c3.tex") === nothing # just check that it runs at all
+    @test savecircuit(c1,10,"c1.tex") === nothing # just check that it runs at all
+    @test savecircuit(c2,"c2.tex") === nothing # just check that it runs at all
+    @test savecircuit(c3,"c3.tex") === nothing # just check that it runs at all
     @test savecircuit(c1,10,"c1.pdf",scale=0.5) === nothing # just check that it runs at all
     @test savecircuit(c2,"c2.pdf",scale=1) === nothing # just check that it runs at all
     @test savecircuit(c3,"c3.pdf",scale=5) === nothing # just check that it runs at all

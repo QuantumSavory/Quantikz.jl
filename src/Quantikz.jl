@@ -102,8 +102,13 @@ struct MultiControlU <: QuantikzOp
     target::AbstractVector{Integer}
 end
 
-MultiControlU(str::AbstractString, target::AbstractVector{Integer}) = MultiControlU(str,[],[],target)
-MultiControlU(target::AbstractVector{Integer}) = MultiControlU("\\;\\;",[],[],target)
+MultiControlU(target::AbstractVector{<:Integer}) = MultiControlU("\\;\\;",[],[],target)
+MultiControlU(str::AbstractString, target::AbstractVector{<:Integer}) = MultiControlU(str,[],[],target)
+MultiControlU(control::AbstractVector{<:Integer},ocontrol::AbstractVector{<:Integer},target::AbstractVector{<:Integer}) = MultiControlU("\\;\\;",control,ocontrol,target)
+MultiControlU(str::AbstractString,control::Integer,target::AbstractVector{<:Integer}) = MultiControlU(str,[control],[],target)
+MultiControlU(control::Integer,target::AbstractVector{<:Integer}) = MultiControlU("\\;\\;",[control],[],target)
+MultiControlU(str::AbstractString,control::Integer,target::Integer) = MultiControlU(str,[control],[],[target])
+MultiControlU(control::Integer,target::Integer) = MultiControlU("\\;\\;",[control],[],[target])
 
 affectedqubits(g::MultiControlU) = [g.control...,g.ocontrol...,g.target...]
 function update_table!(qtable,step,g::MultiControlU) # TODO displaycircuit([CNOT([1,4],[3],[2,5])]) has bad ocircle covered by line and a disconnected target
@@ -182,6 +187,7 @@ end
 
 Measurement(i::Integer) = Measurement("",[i],nothing)
 Measurement(str::AbstractString, i::Integer) = Measurement(str,[i],nothing)
+Measurement(str::AbstractString, is::AbstractVector{<:Integer}) = Measurement(str,is,nothing)
 Measurement(is::AbstractVector{<:Integer}) = Measurement("\\;\\;", is, nothing)
 Measurement(i::Integer, b::Integer) = Measurement("",[i],b)
 Measurement(str::AbstractString, i::Integer, b::Integer) = Measurement(str,[i],b)
@@ -192,6 +198,9 @@ function update_table!(qtable,step,meas::Measurement)
     table = qtable.table
     if length(meas.targets) == 1
         table[meas.targets[1],step] = "\\meterD{$(meas.str)}"
+        if !isnothing(meas.bit)
+            bitsview(qtable)[meas.bit,step] = "\\cwbend{$(-(qtable.qubits-meas.targets[1])-qtable.ancillaries-meas.bit)}"
+        end
     else
         step = step+1
         m,M = extrema(meas.targets)
@@ -273,7 +282,7 @@ function update_table!(qtable,step,meas::ParityMeasurement)
     end
     qtable
 end
-deleteoutputs(m::ParityMeasurement) = affectedqubits(qubits)
+deleteoutputs(m::ParityMeasurement) = affectedqubits(m)
 
 struct Noise <: QuantikzOp
     qubits::AbstractVector{Integer}
@@ -444,6 +453,9 @@ function savecircuit(circuit,qubits,filename; scale=5, kw...) # TODO remove dupl
     # Workaround for imagemagick failing to find gs on Windows (see https://github.com/JuliaIO/ImageMagick.jl/issues/198)
     if endswith(filename, "pdf") || endswith(filename, "PDF")
         circuit2image(circuit, qubits; scale=scale, _workaround_savefile=filename)
+        return
+    elseif endswith(filename, "tex") || endswith(filename, "TEX")
+        savetex(circuit,qubits,filename; kw...)
         return
     end
     image = circuit2image(circuit, qubits; scale=scale, kw...)
