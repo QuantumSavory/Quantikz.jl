@@ -26,6 +26,15 @@ circuit = [
 @test circuit2string(circuit) == "\\begin{quantikz}[transparent]\n\\qw & \\ctrl{0} & \\ctrl{0} & \\gate[3]{U_b} & \\qw & \\qw\\\\\n\\qw & \\ctrl{-1} & \\ctrl{-1} &  & \\qw & \\qw\\\\\n\\qw & \\octrl{-1} & \\qw &  & \\qw & \\qw\\\\\n\\qw & \\qw & \\gate[2]{U_a}\\vqw{-2} & \\qw & \\gate[3,label style={yshift=0.2cm}]{U_c} & \\qw\\\\\n\\qw & \\gate[3,label style={yshift=0.2cm}]{U}\\vqw{-2} &  & \\qw & \\linethrough & \\qw\\\\\n\\qw & \\linethrough & \\qw & \\qw &  & \\qw\\\\\n\\qw &  & \\qw & \\ctrl{-4} & \\qw & \\qw\\\\\n\\qw & \\octrl{-1} & \\qw & \\ctrl{-1} & \\qw & \\qw\n\\end{quantikz}"
 
 circuit = [
+    CNOT(1,2),
+    Measurement(3),
+    Measurement("XY",[1,2],2),
+    Measurement("XY",[3,4],1),
+    Measurement(1)
+]
+@test circuit2string(circuit) == "\\begin{quantikz}[transparent]\n\\qw & \\ctrl{0} & \\gate[2]{XY} & \\qw & \\meterD{} &  & \\\\\n\\qw & \\targ{}\\vqw{-1} &  & \\qw & \\qw & \\qw & \\qw\\\\\n\\qw & \\meterD{} &  &  & \\gate[2]{XY} &  & \\\\\n\\qw & \\qw & \\qw & \\qw &  & \\qw & \\qw\\\\\n &  & \\ctrl{-3} & \\meterD{} & \\ctrl{-1} & \\meterD{} & \\\\\n\\cw & \\cw & \\cw & \\cw & \\cw & \\cwbend{-1} & \\cw\\\\\n\\cw & \\cw & \\cw & \\cwbend{-2} & \\cw & \\cw & \\cw\n\\end{quantikz}"
+
+circuit = [
     Noise([1,5]),
     P(1),
     NoiseAll(),

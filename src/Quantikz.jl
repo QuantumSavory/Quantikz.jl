@@ -286,15 +286,26 @@ end
 function circuit2table_compressed(circuit, qubits)
     table = QuantikzTable(circuit, qubits)
     filled_up_to = fill(1+PADDING,qubits)
+    afilled_up_to = fill(1+PADDING,table.ancillaries)
+    bfilled_up_to = fill(1+PADDING,table.bits)
     for op in circuit # TODO consider using EndpointRanges.jl
         qubits = affectedqubits(op)
+        bits = affectedbits(op)
+        ancillaries = neededancillaries(op)
         if qubits==:all
-            current_step = maximum(filled_up_to)
+            current_step = maximum([filled_up_to...,afilled_up_to...,bfilled_up_to...])
             filled_up_to .= current_step+nsteps(op)
+            afilled_up_to .= current_step+nsteps(op)
+            bfilled_up_to .= current_step+nsteps(op)
         else
-            current_step = maximum(filled_up_to[qubits])
+            current_step = maximum([filled_up_to[qubits]...,afilled_up_to[1:ancillaries]...,bfilled_up_to[bits]...])
             l,h = extrema(qubits)
             filled_up_to[l:h] .= current_step+nsteps(op)
+            afilled_up_to[1:ancillaries] .= current_step+nsteps(op)
+            if !isempty(bits)
+                l,h = extrema(bits)
+                bfilled_up_to[l:h] .= current_step+nsteps(op)
+            end
         end
         update_table!(table,current_step,op)
     end
