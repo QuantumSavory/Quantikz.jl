@@ -31,8 +31,33 @@ end
 
 abstract type QuantikzOp end
 
+struct QuantikzTable
+    table::Matrix{String}
+    qubits::Int
+    ancillaries::Int
+    bits::Int
+end
+
+function QuantikzTable(qubits::Integer,ancillaries::Integer,bits::Integer,length::Integer)
+    tableq = fill(raw"\qw",qubits,length)
+    tablea = fill(raw"",ancillaries,length)
+    tablec = fill(raw"\cw",bits,length)
+    QuantikzTable(vcat(tableq,tablea,tablec), qubits, ancillaries, bits)
+end
+
+qubitsview(qt::QuantikzTable) = @view qt.table[1:qt.qubits,:]
+ancillaryview(qt::QuantikzTable) = @view qt.table[qt.qubits+1:qt.qubits+qt.ancillaries,:]
+bitsview(qt::QuantikzTable) = @view qt.table[qt.qubits+qt.ancillaries+1:end,:]
+
 update_table!(table,step,op) = update_table!(table,step,QuantikzOp(op))
 affectedqubits(op) = affectedqubits(QuantikzOp(op))
+affectedbits(op) = affectedbits(QuantikzOp(op))
+neededancillaries(op) = neededancillaries(QuantikzOp(op))
+nsteps(op) = nsteps(QuantikzOp(op))
+
+affectedbits(op::QuantikzOp) = []
+neededancillaries(op::QuantikzOp) = 0
+nsteps(op::QuantikzOp) = 1
 
 struct MultiControl <: QuantikzOp
     control::AbstractVector{Integer}
@@ -46,7 +71,8 @@ CPHASE(t1::Integer,t2::Integer) = MultiControl([t1,t2],[],[],[])
 SWAP(t1::Integer,t2::Integer) = MultiControl([],[],[],[t1,t2])
 
 affectedqubits(g::MultiControl) = [g.control...,g.ocontrol...,g.target...,g.targetX...]
-function update_table!(table,step,g::MultiControl) # TODO displaycircuit([CNOT([1,4],[3],[2,5])]) has bad ocircle covered by line and a disconnected target
+function update_table!(qtable,step,g::MultiControl) # TODO displaycircuit([CNOT([1,4],[3],[2,5])]) has bad ocircle covered by line and a disconnected target
+    table = qtable.table
     control = g.control
     ocontrol = g.ocontrol
     target = g.target
@@ -62,7 +88,7 @@ function update_table!(table,step,g::MultiControl) # TODO displaycircuit([CNOT([
         table[i,step] = str*"{$(startpoint-i)}"
         startpoint = i
     end
-    table
+    qtable
 end
 
 struct MultiControlU <: QuantikzOp
@@ -75,7 +101,8 @@ end
 MultiU(str::AbstractString, target::AbstractVector{Integer}) = MultiControlU(str,[],[],target)
 
 affectedqubits(g::MultiControlU) = [g.control...,g.ocontrol...,g.target...]
-function update_table!(table,step,g::MultiControlU) # TODO displaycircuit([CNOT([1,4],[3],[2,5])]) has bad ocircle covered by line and a disconnected target
+function update_table!(qtable,step,g::MultiControlU) # TODO displaycircuit([CNOT([1,4],[3],[2,5])]) has bad ocircle covered by line and a disconnected target
+    table = qtable.table
     control = g.control
     ocontrol = g.ocontrol
     target = g.target
@@ -111,7 +138,7 @@ function update_table!(table,step,g::MultiControlU) # TODO displaycircuit([CNOT(
     if startpoint < m
         table[m,step] *= "\\vqw{$(startpoint-m)}"
     end
-    table
+    qtable
 end
 
 struct U <: QuantikzOp
@@ -120,9 +147,10 @@ struct U <: QuantikzOp
 end
 
 affectedqubits(u::U) = [u.target]
-function update_table!(table,step,u::U)
+function update_table!(qtable,step,u::U)
+    table = qtable.table
     table[u.target,step] = "\\gate{$(u.str)}"
-    table
+    qtable
 end
 
 H(target) = U("H",target)
@@ -133,27 +161,52 @@ struct Id <: QuantikzOp
 end
 
 affectedqubits(i::Id) = [i.target]
-function update_table!(table,step,i::Id)
+function update_table!(qtable,step,i::Id)
+    table = qtable.table
     table[i.target,step] = "\\qw"
-    table
+    qtable
 end
 
 struct Measurement <: QuantikzOp
-    strs::Vector{AbstractString}
+    str::AbstractString
     targets::Vector{Integer}
+    bit # might be nothing
 end
 
-Measurement(i::Integer) = Measurement([""],[i])
-Measurement(str::AbstractString, i::Integer) = Measurement([str],[i])
+Measurement(i::Integer) = Measurement("",[i],nothing)
+Measurement(str::AbstractString, i::Integer) = Measurement(str,[i],nothing)
+Measurement(is::AbstractVector{<:Integer}) = Measurement("", is, nothing)
+Measurement(i::Integer, b::Integer) = Measurement("",[i],b)
+Measurement(str::AbstractString, i::Integer, b::Integer) = Measurement(str,[i],b)
+Measurement(is::AbstractVector{<:Integer}, b::Integer) = Measurement("", is, b)
+
 
 affectedqubits(m::Measurement) = m.targets
-function update_table!(table,step,meas::Measurement)
-    for (str, target) in zip(meas.strs, meas.targets)
-        table[target,step] = "\\meterD{$(str)}"
-        table[target,step+1:end] .= ""
+function update_table!(qtable,step,meas::Measurement)
+    table = qtable.table
+    if length(meas.targets) == 1
+        table[meas.targets[1],step] = "\\meterD{$(meas.str)}"
+        table[meas.targets[1],step+1:end] .= ""
+    else
+        m,M = extrema(meas.targets)
+        offset = iseven(M-m) && (m+M)/2 ∉ meas.targets ? ",label style={yshift=0.2cm}" : ""
+        table[m,step] = "\\gate[$(M-m+1)$(offset)]{$(meas.str)}"
+        for i in m+1:M
+            if i ∉ meas.targets
+                table[i,step] = "\\linethrough"
+            else
+                table[i,step] = ""
+            end
+        end
+        ancillaryview(qtable)[1,step] = "\\ctrl{$(M-qtable.qubits-1)}"
+        ancillaryview(qtable)[1,step+1] = "\\meterD{}"
+        bitsview(qtable)[meas.bit,step+1] = "\\cwbend{$(1-qtable.ancillaries-meas.bit)}"
     end
-    table
+    qtable
 end
+neededancillaries(m::Measurement) = length(m.targets) > 1 ? 1 : 0
+nsteps(m::Measurement) = length(m.targets) > 1 ? 2 : 1
+affectedbits(m::Measurement) = isnothing(m.bit) ? [] : [m.bit]
 
 struct ParityMeasurement <: QuantikzOp
     paulis::AbstractVector{String}
@@ -161,7 +214,8 @@ struct ParityMeasurement <: QuantikzOp
 end
 
 affectedqubits(pm::ParityMeasurement) = pm.qubits
-function update_table!(table,step,meas::ParityMeasurement)
+function update_table!(qtable,step,meas::ParityMeasurement)
+    table = qtable.table
     qubits = meas.qubits
     paulis = meas.paulis
     first = qubits[1]
@@ -174,7 +228,7 @@ function update_table!(table,step,meas::ParityMeasurement)
         first = i
         end
     end
-    table
+    qtable
 end
 
 struct Noise <: QuantikzOp
@@ -182,52 +236,69 @@ struct Noise <: QuantikzOp
 end
 
 affectedqubits(n::Noise) = n.qubits
-function update_table!(table,step,n::Noise)
+function update_table!(qtable,step,n::Noise)
+    table = qtable.table
     for q in n.qubits
         table[q,step] = "\\gate[1,style={starburst,starburst points=7,inner xsep=-2pt,inner ysep=-2pt,scale=0.5}]{}"
     end
-    table
+    qtable
 end
 
 struct NoiseAll <: QuantikzOp
 end
 
 affectedqubits(n::NoiseAll) = :all # TODO consider using EndpointRanges.jl
-function update_table!(table,step,n::NoiseAll)
+function update_table!(qtable,step,n::NoiseAll)
+    table = qtable.table
     table[:,step] .= ["\\gate[1,style={starburst,starburst points=7,inner xsep=-2pt,inner ysep=-2pt,scale=0.5}]{}"]
-    table
+    qtable
 end
 
 const PADDING = 1
 
+circuitwidth(circuit) = maximum([affectedqubits(o)==:all ? 1 : maximum(affectedqubits(o)) for o in circuit])
+function circuitwidthbits(circuit) 
+    bits = vcat(map(affectedbits,circuit)...)
+    if isempty(bits)
+        return 0
+    else
+        return maximum(bits)
+    end
+end
+
+function QuantikzTable(circuit::AbstractVector, qubits::Integer)
+    steps = sum(map(nsteps, circuit))
+    ans = maximum(map(neededancillaries, circuit))
+    bits = circuitwidthbits(circuit)
+    table = QuantikzTable(qubits,ans,bits,steps+2*PADDING)
+end
+
 function circuit2table_expanded(circuit, qubits)
-    steps = length(circuit)
-    table = fill(raw"\qw",qubits,steps+2*PADDING)
+    table = QuantikzTable(circuit, qubits)
     current_step = 1+PADDING
     for op in circuit
         update_table!(table,current_step,op)
-        current_step+=1
+        current_step+=nsteps(op)
     end
     return table
 end
 
 function circuit2table_compressed(circuit, qubits)
-    steps = length(circuit)
-    table = fill(raw"\qw",qubits,steps+2*PADDING)
+    table = QuantikzTable(circuit, qubits)
     filled_up_to = fill(1+PADDING,qubits)
     for op in circuit # TODO consider using EndpointRanges.jl
         qubits = affectedqubits(op)
         if qubits==:all
             current_step = maximum(filled_up_to)
-            filled_up_to .= current_step+1
+            filled_up_to .= current_step+nsteps(op)
         else
             current_step = maximum(filled_up_to[qubits])
             l,h = extrema(qubits)
-            filled_up_to[l:h] .= current_step+1
+            filled_up_to[l:h] .= current_step+nsteps(op)
         end
         update_table!(table,current_step,op)
     end
-    return table[:,1:maximum(filled_up_to)-1+PADDING]
+    return QuantikzTable(table.table[:,1:maximum(filled_up_to)-1+PADDING],table.qubits,table.ancillaries,table.bits)
 end
 
 function circuit2table(circuit, qubits; mode=:compressed, kw...)
@@ -240,11 +311,10 @@ function circuit2table(circuit, qubits; mode=:compressed, kw...)
     end
 end
 
-circuitwidth(circuit) = maximum([affectedqubits(o)==:all ? 1 : maximum(affectedqubits(o)) for o in circuit])
 circuit2table(circuit; kw...) = circuit2table(circuit, circuitwidth(circuit); kw...)
 
-function table2string(table)
-    lstr = join([join(row," & ") for row in eachrow(table)], "\\\\\n")
+function table2string(qtable)
+    lstr = join([join(row," & ") for row in eachrow(qtable.table)], "\\\\\n")
     return "\\begin{quantikz}[transparent]\n$(lstr)\n\\end{quantikz}"
 end
 
@@ -305,6 +375,11 @@ function Base.show(io::IO, mime::MIME"image/png", circuit::AbstractVector{<:Quan
 end
 Base.show(io::IO, mime::MIME"image/png", gate::T; scale=1, kw...) where T<:QuantikzOp = show(io, mime, [gate]; scale=scale, kw...)
 
+function displaystring(string)
+    io = IOBuffer()
+    save(Stream(format"PNG", io), string2image(string))
+    display(MIME"image/png"(),read(seekstart(io)))
+end
 
 function savecircuit(circuit,qubits,filename; scale=5, kw...) # TODO remove duplicated code
     # Workaround for imagemagick failing to find gs on Windows (see https://github.com/JuliaIO/ImageMagick.jl/issues/198)
