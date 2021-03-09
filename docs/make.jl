@@ -8,6 +8,7 @@ DocMeta.setdocmeta!(Quantikz, :DocTestSetup, :(using Quantikz); recursive=true)
 makedocs(
 doctest = false,
 clean = true,
+devbranch = "main",
 sitename = "Quantikz.jl",
 format = Documenter.HTML(),
 modules = [Quantikz],
