@@ -48,10 +48,10 @@ circuit = [
 ```
 
 In standard mode:
-![./doc/example_compact.png]
+![](./doc/example_compact.png)
 
 And expanded for easier identification:
-![./doc/example.png]
+![](./doc/example.png)
 
 ## Built-in quantum circuit operations
 
