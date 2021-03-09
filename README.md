@@ -1,6 +1,6 @@
 # Quantikz.jl
 
-[![Documentation of latest stable version](https://img.shields.io/badge/docs-stable-blue.svg)](https://github.com/Krastanov/Quantikz/blob/main/Quantikz.ipynb)
+[![Documentation of latest stable version](https://img.shields.io/badge/docs-stable-blue.svg)](https://github.com/Krastanov/Quantikz/blob/main/doc/Quantikz.ipynb)
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Krastanov/Quantikz/CI)](https://github.com/Krastanov/Quantikz/actions?query=workflow%3ACI+branch%3Amain)
 [![Test coverage from codecov](https://img.shields.io/codecov/c/gh/Krastanov/Quantikz?label=codecov)](https://codecov.io/gh/Krastanov/Quantikz)
 
@@ -12,7 +12,7 @@ To install it use:
 ] add Quantikz
 ```
 
-See the [attached notebook](https://github.com/Krastanov/Quantikz/blob/main/Quantikz.ipynb) for examples.
+See the [attached notebook](https://github.com/Krastanov/Quantikz/blob/main/doc/Quantikz.ipynb) for examples.
 
 The library can generate `tex`, `pdf`, and `png` files, as well as live previews. It does not require anything to be installed on your system (the `tex` and image manipulation dependencies are handled by Julia, with `Tectonic.jl` and `FileIO.jl`). If you want to generate another image type, simply use `FileIO`.
 
@@ -35,9 +35,27 @@ circuit2string(circuit)
 savetex(circuit, "file.tex")
 ```
 
+## Example
+
+```julia
+circuit = [
+    CNOT(1,2), CPHASE(2,3), SWAP(3,4),
+    H(5), P(6), Id(7),
+    U("\\frac{\\phi}{4}",8),
+    Measurement("X",1), Measurement([2,3],2), ClassicalDecision("U",[3,5],2),
+    Measurement("M",[5,6],1),
+    MultiControlU("G",[2,8],[7,3],[4,6])]
+```
+
+In standard mode:
+![./doc/example_compact.png]
+
+And expanded for easier identification:
+![./doc/example.png]
+
 ## Built-in quantum circuit operations
 
-`CNOT`, `CPHASE`, `SWAP`, `H`, `P`, `Id`, a generic single qubit gate `U`, a generic measurement `Measurement`, and a parity check measurement `ParityMeasurement`.
+`CNOT`, `CPHASE`, `SWAP`, `H`, `P`, `Id`, a generic single qubit gate `U`, a generic measurement `Measurement`, a classically conditioned gate `ClassicalDecision`, and a parity check measurement `ParityMeasurement`.
 
 The general purpose `MultiControl(controls, ocontrols, targets, targetXs)` can be used to create an arbitrary combination of muticontrol multiqubit gates. Each argument lists the indices of qubits that should get a certain symbol: `controls` is filled circles, `ocontrols` is empty circles, `targets` is the NOT symbol, and `targetXs` is the X symbols.
 
