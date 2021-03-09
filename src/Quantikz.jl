@@ -446,7 +446,7 @@ function savecircuit(circuit,qubits,filename; scale=5, kw...) # TODO remove dupl
         circuit2image(circuit, qubits; scale=scale, _workaround_savefile=filename)
         return
     end
-    image = circuit2image(circuit, qubits; scale=scale)
+    image = circuit2image(circuit, qubits; scale=scale, kw...)
     save(filename,image)
 end
 savecircuit(circuit, filename; kw...) = savecircuit(circuit, circuitwidth(circuit), filename; kw...)
