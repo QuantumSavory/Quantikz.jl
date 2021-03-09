@@ -102,7 +102,8 @@ struct MultiControlU <: QuantikzOp
     target::AbstractVector{Integer}
 end
 
-MultiU(str::AbstractString, target::AbstractVector{Integer}) = MultiControlU(str,[],[],target)
+MultiControlU(str::AbstractString, target::AbstractVector{Integer}) = MultiControlU(str,[],[],target)
+MultiControlU(target::AbstractVector{Integer}) = MultiControlU("\\;\\;",[],[],target)
 
 affectedqubits(g::MultiControlU) = [g.control...,g.ocontrol...,g.target...]
 function update_table!(qtable,step,g::MultiControlU) # TODO displaycircuit([CNOT([1,4],[3],[2,5])]) has bad ocircle covered by line and a disconnected target
@@ -150,6 +151,8 @@ struct U <: QuantikzOp
     target::Integer
 end
 
+U(target::Integer) = U("\\;\\;", target)
+
 affectedqubits(u::U) = [u.target]
 function update_table!(qtable,step,u::U)
     table = qtable.table
@@ -179,10 +182,10 @@ end
 
 Measurement(i::Integer) = Measurement("",[i],nothing)
 Measurement(str::AbstractString, i::Integer) = Measurement(str,[i],nothing)
-Measurement(is::AbstractVector{<:Integer}) = Measurement("", is, nothing)
+Measurement(is::AbstractVector{<:Integer}) = Measurement("\\;\\;", is, nothing)
 Measurement(i::Integer, b::Integer) = Measurement("",[i],b)
 Measurement(str::AbstractString, i::Integer, b::Integer) = Measurement(str,[i],b)
-Measurement(is::AbstractVector{<:Integer}, b::Integer) = Measurement("", is, b)
+Measurement(is::AbstractVector{<:Integer}, b::Integer) = Measurement("\\;\\;", is, b)
 
 affectedqubits(m::Measurement) = m.targets
 function update_table!(qtable,step,meas::Measurement)
@@ -190,6 +193,7 @@ function update_table!(qtable,step,meas::Measurement)
     if length(meas.targets) == 1
         table[meas.targets[1],step] = "\\meterD{$(meas.str)}"
     else
+        step = step+1
         m,M = extrema(meas.targets)
         offset = iseven(M-m) && (m+M)/2 ∉ meas.targets ? ",label style={yshift=0.2cm}" : ""
         table[m,step] = "\\gate[$(M-m+1)$(offset)]{$(meas.str)}"
@@ -201,14 +205,17 @@ function update_table!(qtable,step,meas::Measurement)
             end
         end
         qubitsview(qtable)[meas.targets,step+1] .= "\\qw"
+        ancillaryview(qtable)[1,step-1] = "\\lstick{}"
         ancillaryview(qtable)[1,step] = "\\ctrl{$(M-qtable.qubits-1)}"
         ancillaryview(qtable)[1,step+1] = "\\meterD{}"
-        bitsview(qtable)[meas.bit,step+1] = "\\cwbend{$(1-qtable.ancillaries-meas.bit)}"
+        if !isnothing(meas.bit)
+            bitsview(qtable)[meas.bit,step+1] = "\\cwbend{$(1-qtable.ancillaries-meas.bit)}"
+        end
     end
     qtable
 end
 neededancillaries(m::Measurement) = length(m.targets) > 1 ? 1 : 0
-nsteps(m::Measurement) = length(m.targets) > 1 ? 2 : 1
+nsteps(m::Measurement) = length(m.targets) > 1 ? 3 : 1
 affectedbits(m::Measurement) = isnothing(m.bit) ? [] : [m.bit]
 deleteoutputs(m::Measurement) = length(m.targets) == 1 ? m.targets : []
 
@@ -220,8 +227,8 @@ end
 
 ClassicalDecision(str::AbstractString, t::Integer, c::Integer) = ClassicalDecision(str, [t], [c])
 ClassicalDecision(str::AbstractString, t::AbstractVector{<:Integer}, c::Integer) = ClassicalDecision(str, t, [c])
-ClassicalDecision(t::Integer, c::Integer) = ClassicalDecision("", [t], [c])
-ClassicalDecision(t::AbstractVector{<:Integer}, c::Integer) = ClassicalDecision("", t, [c])
+ClassicalDecision(t::Integer, c::Integer) = ClassicalDecision("\\;\\;", [t], [c])
+ClassicalDecision(t::AbstractVector{<:Integer}, c::Integer) = ClassicalDecision("\\;\\;", t, [c])
 
 affectedqubits(g::ClassicalDecision) = g.targets
 affectedbits(g::ClassicalDecision) = g.bits
@@ -238,7 +245,7 @@ function update_table!(qtable,step,g::ClassicalDecision)
         end
     end
     startpoint = minimum(g.bits)
-    bitsview(qtable)[startpoint,step] = "\\cwbend{$(1-qtable.ancillaries-startpoint-M)}"
+    bitsview(qtable)[startpoint,step] = "\\cwbend{$(-(qtable.qubits-M)-qtable.ancillaries-startpoint)}"
     for b in sort(g.bits)[2:end]
         bitsview(qtable)[b,step] = "\\cwbend{$(startpoint-b)}"
         startpoint = b
@@ -363,7 +370,7 @@ circuit2table(circuit; kw...) = circuit2table(circuit, circuitwidth(circuit); kw
 function table2string(qtable; sep=0.8, quantikzoptions=nothing, kw...)
     lstr = join([join(row," & ") for row in eachrow(qtable.table)], "\\\\\n")
     if isnothing(quantikzoptions)
-        opts = "row sep={$(sep)cm,between origins}"
+        opts = "transparent, row sep={$(sep)cm,between origins}"
     else
         opts = quantikzoptions
     end
