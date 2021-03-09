@@ -23,7 +23,7 @@ circuit = [
     MultiControlU("U_b",[7,8],[],[1,2,3]),
     MultiControlU("U_c",[],[],[4,6])
 ]
-@test circuit2string(circuit) == "\\begin{quantikz}[transparent]\n\\qw & \\ctrl{0} & \\ctrl{0} & \\gate[3]{U_b} & \\qw & \\qw\\\\\n\\qw & \\ctrl{-1} & \\ctrl{-1} &  & \\qw & \\qw\\\\\n\\qw & \\octrl{-1} & \\qw &  & \\qw & \\qw\\\\\n\\qw & \\qw & \\gate[2]{U_a}\\vqw{-2} & \\qw & \\gate[3,label style={yshift=0.2cm}]{U_c} & \\qw\\\\\n\\qw & \\gate[3,label style={yshift=0.2cm}]{U}\\vqw{-2} &  & \\qw & \\linethrough & \\qw\\\\\n\\qw & \\linethrough & \\qw & \\qw &  & \\qw\\\\\n\\qw &  & \\qw & \\ctrl{-4} & \\qw & \\qw\\\\\n\\qw & \\octrl{-1} & \\qw & \\ctrl{-5} & \\qw & \\qw\n\\end{quantikz}"
+@test circuit2string(circuit) == "\\begin{quantikz}[transparent]\n\\qw & \\ctrl{0} & \\ctrl{0} & \\gate[3]{U_b} & \\qw & \\qw\\\\\n\\qw & \\ctrl{-1} & \\ctrl{-1} &  & \\qw & \\qw\\\\\n\\qw & \\octrl{-1} & \\qw &  & \\qw & \\qw\\\\\n\\qw & \\qw & \\gate[2]{U_a}\\vqw{-2} & \\qw & \\gate[3,label style={yshift=0.2cm}]{U_c} & \\qw\\\\\n\\qw & \\gate[3,label style={yshift=0.2cm}]{U}\\vqw{-2} &  & \\qw & \\linethrough & \\qw\\\\\n\\qw & \\linethrough & \\qw & \\qw &  & \\qw\\\\\n\\qw &  & \\qw & \\ctrl{-4} & \\qw & \\qw\\\\\n\\qw & \\octrl{-1} & \\qw & \\ctrl{-1} & \\qw & \\qw\n\\end{quantikz}"
 
 circuit = [
     Noise([1,5]),

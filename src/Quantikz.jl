@@ -126,7 +126,7 @@ function update_table!(qtable,step,g::MultiControlU) # TODO displaycircuit([CNOT
         end
     end
     for (str, i) in controls
-        if i > M
+        if i > M && startpoint < M
             if startpoint < m
                 table[m,step] *= "\\vqw{$(startpoint-m)}"
             end
