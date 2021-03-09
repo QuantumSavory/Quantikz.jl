@@ -44,7 +44,7 @@ circuit = [
     U("\\frac{\\phi}{4}",8),
     Measurement("X",1), Measurement([2,3],2), ClassicalDecision("U",[3,5],2),
     Measurement("M",[5,6],1),
-    MultiControlU("G",[2,8],[7,3],[4,6])]
+    MultiControlU("G",[2,8],[7,3],[4,5,6])]
 ```
 
 In standard mode:
