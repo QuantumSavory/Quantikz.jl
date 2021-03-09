@@ -8,7 +8,6 @@ DocMeta.setdocmeta!(Quantikz, :DocTestSetup, :(using Quantikz); recursive=true)
 makedocs(
 doctest = false,
 clean = true,
-devbranch = "main",
 sitename = "Quantikz.jl",
 format = Documenter.HTML(),
 modules = [Quantikz],
@@ -20,5 +19,6 @@ pages = [
 )
 
 deploydocs(
-    repo = "github.com/Krastanov/Quantikz.git"
+    repo = "github.com/Krastanov/Quantikz.git",
+    devbranch = "main",
 )
