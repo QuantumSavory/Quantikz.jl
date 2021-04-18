@@ -5,6 +5,9 @@
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Krastanov/Quantikz/CI)](https://github.com/Krastanov/Quantikz/actions?query=workflow%3ACI+branch%3Amain)
 [![Test coverage from codecov](https://img.shields.io/codecov/c/gh/Krastanov/Quantikz?label=codecov)](https://codecov.io/gh/Krastanov/Quantikz)
 
+[![Live demo](https://img.shields.io/badge/live%20demo-render%20circuits%20in%20your%20browser-blueviolet)](https://quantikz.krastanov.org/)
+
+
 A minimal package for drawing quantum circuits using the `quantikz` and `tikz` TeX libraries.
 
 To install it use:
