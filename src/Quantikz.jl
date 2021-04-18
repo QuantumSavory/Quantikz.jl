@@ -302,7 +302,7 @@ end
 
 affectedqubits(n::NoiseAll) = ibegin:iend
 function update_table!(qtable,step,n::NoiseAll)
-    table = qtable.table
+    table = qubitsview(qtable)
     table[:,step] .= ["\\gate[1,style={starburst,starburst points=7,inner xsep=-2pt,inner ysep=-2pt,scale=0.5}]{}"]
     qtable
 end
@@ -338,24 +338,38 @@ function circuit2table_expanded(circuit, qubits)
     return table
 end
 
+Base.extrema(r::EndpointRanges.EndpointUnitRange) = (r.start, r.stop) # TODO submit these to EndpointRanges (and make them <:AbstractRange)
+Base.extrema(r::EndpointRanges.EndpointStepRange) = r.step>0 ? (r.start, r.stop) : (r.stop, r.start)
+function extremarange(r::AbstractVector)
+    if isempty(r)
+        return r
+    else
+        start, stop = extrema(r)
+        return start:stop
+    end
+end
+function extremarange(r) # TODO should really be AbstractRange
+    start, stop = extrema(r)
+    return start:stop
+end
+
+
 function circuit2table_compressed(circuit, qubits)
     table = QuantikzTable(circuit, qubits)
     filled_up_to = fill(1+PADDING,qubits)
     afilled_up_to = fill(1+PADDING,table.ancillaries)
     bfilled_up_to = fill(1+PADDING,table.bits)
-    for op in circuit # TODO consider using EndpointRanges.jl
-        qubits = affectedqubits(op)
-        bits = affectedbits(op)
+    for op in circuit
+        qubits = extremarange(affectedqubits(op))
+        bits = extremarange(affectedbits(op))
         ancillaries = neededancillaries(op)
         steps = nsteps(op)
         current_step = maximum([filled_up_to[qubits]...,afilled_up_to[1:ancillaries]...,bfilled_up_to[bits]...])
-        l,h = qubits == ibegin:iend ? (ibegin,iend) : extrema(qubits)
-        filled_up_to[l:h] .= current_step+steps
+        filled_up_to[qubits] .= current_step+steps
         afilled_up_to[1:ancillaries] .= current_step+steps
-        if !isempty(bits)
-            filled_up_to[h:end] .= current_step+steps
-            l,h = extrema(bits)
-            bfilled_up_to[l:h] .= current_step+steps
+        if !isempty(affectedbits(op))
+            filled_up_to[qubits.stop:end] .= current_step+steps
+            bfilled_up_to[bits] .= current_step+steps
         end
         qubitsview(table)[affectedqubits(op),current_step:end] .= "\\qw"
         qubitsview(table)[deleteoutputs(op),current_step:end] .= ""

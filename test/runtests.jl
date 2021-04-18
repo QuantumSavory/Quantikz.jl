@@ -1,7 +1,7 @@
 using Quantikz, Test
 
 function stringtests()
-@testset "String conversions" begin
+@testset "Misc string conversions" begin
 circuit = [
            CNOT(1,2),CPHASE(2,3),
            CPHASE(4,5),
@@ -55,8 +55,17 @@ circuit = [
 ]
 @test circuit2string(circuit) == "\\begin{quantikz}[transparent, row sep={0.8cm,between origins}]\n\\qw & \\ctrl{0} & \\qw & \\gate[2]{XY} & \\qw & \\meterD{} & \\meterD{} &  &  &  & \\\\\n\\qw & \\targ{}\\vqw{-1} & \\qw &  & \\qw & \\qw & \\qw & \\qw & \\gate[2]{XY} & \\qw & \\qw\\\\\n\\qw & \\meterD{} &  &  &  & \\qw & \\gate[2]{XY} & \\qw &  & \\qw & \\qw\\\\\n\\qw & \\qw & \\qw & \\qw & \\qw & \\qw &  & \\qw & \\qw & \\meterD{} & \\\\\n &  & \\lstick{} & \\ctrl{-3} & \\meterD{} & \\lstick{} & \\ctrl{-1} & \\meterD{} &  &  & \\\\\n\\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cwbend{-1} & \\cwbend{-3} & \\cw & \\cw\\\\\n\\cw & \\cw & \\cw & \\cw & \\cwbend{-2} & \\cw & \\cw & \\cw & \\cwbend{-1} & \\cw & \\cw\n\\end{quantikz}"
 @test circuit2string(circuit, mode=:expanded) == "\\begin{quantikz}[transparent, row sep={0.8cm,between origins}]\n\\qw & \\ctrl{0} & \\qw & \\qw & \\gate[2]{XY} & \\qw & \\qw & \\qw & \\qw & \\meterD{} &  & \\meterD{} &  & \\\\\n\\qw & \\targ{}\\vqw{-1} & \\qw & \\qw &  & \\qw & \\qw & \\qw & \\qw & \\qw & \\gate[2]{XY} & \\qw & \\qw & \\qw\\\\\n\\qw & \\qw & \\meterD{} &  &  &  &  & \\gate[2]{XY} & \\qw & \\qw &  & \\qw & \\qw & \\qw\\\\\n\\qw & \\qw & \\qw & \\qw & \\qw & \\qw & \\qw &  & \\qw & \\qw & \\qw & \\qw & \\meterD{} & \\\\\n &  &  & \\lstick{} & \\ctrl{-3} & \\meterD{} & \\lstick{} & \\ctrl{-1} & \\meterD{} &  &  &  &  & \\\\\n\\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cwbend{-1} & \\cw & \\cwbend{-3} & \\cw & \\cw & \\cw\\\\\n\\cw & \\cw & \\cw & \\cw & \\cw & \\cwbend{-2} & \\cw & \\cw & \\cw & \\cw & \\cwbend{-1} & \\cw & \\cw & \\cw\n\\end{quantikz}"
-
 end
+
+@testset "No overlaps in compressed table" begin
+@test circuit2string([CNOT(3,2),CNOT(1,4)]) == circuit2string([CNOT(3,2),CNOT(1,4)], mode=:expanded) == "\\begin{quantikz}[transparent, row sep={0.8cm,between origins}]\n\\qw & \\qw & \\ctrl{0} & \\qw\\\\\n\\qw & \\targ{}\\vqw{0} & \\qw & \\qw\\\\\n\\qw & \\ctrl{-1} & \\qw & \\qw\\\\\n\\qw & \\qw & \\targ{}\\vqw{-3} & \\qw\n\\end{quantikz}"
+@test circuit2string([CNOT(1,4),CNOT(3,2)]) == circuit2string([CNOT(1,4),CNOT(3,2)], mode=:expanded) == "\\begin{quantikz}[transparent, row sep={0.8cm,between origins}]\n\\qw & \\ctrl{0} & \\qw & \\qw\\\\\n\\qw & \\qw & \\targ{}\\vqw{0} & \\qw\\\\\n\\qw & \\qw & \\ctrl{-1} & \\qw\\\\\n\\qw & \\targ{}\\vqw{-3} & \\qw & \\qw\n\\end{quantikz}"
+end
+
+@testset "NoiseAll on just qubits" begin
+@test circuit2string([NoiseAll(), Measurement(1,2)]) == "\\begin{quantikz}[transparent, row sep={0.8cm,between origins}]\n\\qw & \\gate[1,style={starburst,starburst points=7,inner xsep=-2pt,inner ysep=-2pt,scale=0.5}]{} & \\meterD{} & \\\\\n\\cw & \\cw & \\cw & \\cw\\\\\n\\cw & \\cw & \\cwbend{-2} & \\cw\n\\end{quantikz}"
+end
+
 end
 
 function filetests()
