@@ -28,7 +28,7 @@ quantikzname = "tikzlibraryquantikz.code.tex"
 quantikzfile = joinpath(artifact"quantikz", "quantikz-0.9.6", quantikzname)
 
 macro trysuppress(expr)
-    :(try; @suppress($(esc(expr))); catch; @warn "Command failed... Retrying..."; $(esc(expr)); end;)
+    :(try; @suppress($(esc(expr))); catch e; @warn "Command failed... $(e) Retrying..."; $(esc(expr)); end;)
 end
 
 abstract type QuantikzOp end
