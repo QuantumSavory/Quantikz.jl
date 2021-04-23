@@ -364,7 +364,11 @@ function circuit2table_compressed(circuit, qubits)
     afilled_up_to = fill(1+PADDING,table.ancillaries)
     bfilled_up_to = fill(1+PADDING,table.bits)
     for op in circuit
-        qubits = extremarange(affectedqubits(op))
+        if isempty(affectedbits(op)) && neededancillaries(op)==0
+            qubits = extremarange(affectedqubits(op))
+        else
+            qubits = minimum(affectedqubits(op)):iend
+        end
         bits = extremarange(affectedbits(op))
         ancillaries = neededancillaries(op)
         steps = nsteps(op)

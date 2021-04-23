@@ -66,6 +66,10 @@ end
 @test circuit2string([NoiseAll(), Measurement(1,2)]) == "\\begin{quantikz}[transparent, row sep={0.8cm,between origins}]\n\\qw & \\gate[1,style={starburst,starburst points=7,inner xsep=-2pt,inner ysep=-2pt,scale=0.5}]{} & \\meterD{} & \\\\\n\\cw & \\cw & \\cw & \\cw\\\\\n\\cw & \\cw & \\cwbend{-2} & \\cw\n\\end{quantikz}"
 end
 
+@testset "Clearance for vertical classical wires" begin
+@test circuit2string([Measurement(2),Measurement(1,1)]) == circuit2string([Measurement(2),Measurement(1,1)], mode=:expanded) == "\\begin{quantikz}[transparent, row sep={0.8cm,between origins}]\n\\qw & \\qw & \\meterD{} & \\\\\n\\qw & \\meterD{} &  & \\\\\n\\cw & \\cw & \\cwbend{-2} & \\cw\n\\end{quantikz}"
+end
+
 end
 
 function filetests()
