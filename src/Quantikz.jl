@@ -421,29 +421,21 @@ function string2image(string; scale=5, kw...)
     \\end{adjustbox}
     \\end{document}
     """
-    # Workaround for imagemagick failing to find gs on Windows (see https://github.com/JuliaIO/ImageMagick.jl/issues/198)
     savefile = get(Dict(kw), :_workaround_savefile, nothing)
-    olddir = pwd()
-    cd(dir) do
-        f = open("input.tex", "w")
-        print(f,template)
-        close(f)
-        tectonic() do bin
-            tryrun(`$bin input.tex`)
+    f = open(joinpath(dir,"input.tex"), "w")
+    print(f,template)
+    close(f)
+    tectonic() do bin
+        tryrun(`$bin $(joinpath(dir,"input.tex"))`)
+    end
+    if isnothing(savefile)
+        gs() do bin
+            tryrun(`$bin -dNOPAUSE -sDEVICE=png16m -dSAFER -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=2 -dTextAlphaBits=4 -dGraphicsAlphaBits=1 -dDownScaleFactor=8 -r800 -sOutputFile=$(joinpath(dir,"input.png")) $(joinpath(dir,"input.pdf")) -dBATCH`)
         end
-        # Workaround for imagemagick failing to find gs on Windows (see https://github.com/JuliaIO/ImageMagick.jl/issues/198)
-        #gs() do bin
-        #    return load("input.pdf")
-        #end
-        if isnothing(savefile)
-            gs() do bin
-                tryrun(`$bin -dNOPAUSE -sDEVICE=png16m -dSAFER -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=2 -dTextAlphaBits=4 -dGraphicsAlphaBits=1 -dDownScaleFactor=8 -r800 -sOutputFile=input.png input.pdf -dBATCH`)
-            end
-            return load("input.png")
-        else
-            cp("input.pdf", joinpath(olddir,savefile), force=true)
-            return
-        end
+        return load(joinpath(dir,"input.png"))
+    else
+        cp(joinpath(dir,"input.pdf"), savefile, force=true)
+        return
     end
 end
 
