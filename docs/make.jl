@@ -14,6 +14,7 @@ modules = [Quantikz],
 authors = "Stefan Krastanov",
 pages = [
 "Quantikz.jl" => "index.md",
+"Available Operations" => "useful.md",
 #"API" => "API.md"
 ]
 )

@@ -10,88 +10,24 @@ A minimal package for drawing quantum circuits using the `quantikz`[^1] and `tik
 
 [^1]: [Tutorial on the Quantikz Package, Alastair Kay](https://arxiv.org/abs/1809.03842)
 
-## Available Operations
+## Examples
 
-### Standard Single- and Two-qubit Gates
-
-```@example 1
-using Quantikz # hide
-[P(1), H(2), Id(3), U(4), U(raw"\mathrm{Gate}",5)]
-```
+See the [full list of available operations](@ref available-operations).
 
 ```@example 1
-latexmatrix = raw"\begin{pmatrix}
-\alpha & \beta \\
-\gamma & \delta
-\end{pmatrix}"
-U(latexmatrix,1)
+using Quantikz
+circuit = [
+    CNOT(1,2), CPHASE(2,3), SWAP(3,4),
+    H(5), P(6), Id(7),
+    U("\\frac{\\phi}{4}",8),
+    Measurement("X",1), Measurement([2,3],2), ClassicalDecision("U",[3,5],2),
+    Measurement("M",[5,6],1),
+    MultiControlU("G",[2,8],[7,3],[4,5,6])]
 ```
 
-```@example 1
-[CNOT(1,2), CPHASE(2,3), SWAP(3,4)]
-```
+## Saving files
 
-### Multi Qubit Gates
-
-#### Arbitrary combination of filled circle, open circle, NOT, and cross
-
-```@example 1
-MultiControl([1],[2],[3],[4])
-```
-
-#### Arbitrary controlled gate
-
-```@example 1
-[
-    MultiControlU([1], [2], [3,4]),
-    MultiControlU("XYZ",  [1], [2], [3,4,5]),
-    MultiControlU("U_a",  [1], [2], [3,5]),
-]
-```
-
-#### Gate dependent on classical bits
-
-```@example 1
-[
-    ClassicalDecision(1, 1),
-    ClassicalDecision("U",  [1,2], 2),
-    ClassicalDecision("U_a",  [1,3], [1,3]),
-]
-```
-
-### Measurements
-
-#### Single qubit, with optional result stored to bits
-
-```@example 1
-[
-    Measurement(1),
-    Measurement("X", 2),
-    Measurement("Z", 3, 1)
-]
-```
-
-#### Multiple qubits stabilizer measurement, with optional result stored to bits.
-
-```@example 1
-[
-    Measurement([1,2]),
-    Measurement("ZZ", [2,3]),
-    Measurement("XX", [3,4], 1)
-]
-```
-
-#### Multiqubit Bell measurements
-
-```@example 1
-ParityMeasurement(["X","Y","Z"], [1,2,4])
-```
-
-### Noise Events
-
-```@example 1
-[Noise([1,5]), NoiseAll()]
-```
+Use `savecircuit(circuit, filename)` for `tex`, `pdf`, and `png` files.
 
 ## Custom `quantikz` TeX code
 
@@ -111,10 +47,6 @@ And after modifications, the table can be turned into a tex string
 ```@exampl 1
 table2string(qtable)
 ```
-
-## Saving files
-
-Use `savecircuit(circuit, filename)` for `tex`, `pdf`, and `png` files.
 
 ## Custom Objects
 
