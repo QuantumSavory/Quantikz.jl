@@ -9,7 +9,6 @@ using Pkg.Artifacts
 using EndpointRanges
 using FileIO
 using Ghostscript_jll
-using Suppressor
 using Tectonic
 
 export MultiControl, CNOT, CPHASE, SWAP, H, P, Id, U,
@@ -27,8 +26,13 @@ export MultiControl, CNOT, CPHASE, SWAP, H, P, Id, U,
 quantikzname = "tikzlibraryquantikz.code.tex"
 quantikzfile = joinpath(artifact"quantikz", "quantikz-0.9.6", quantikzname)
 
-macro trysuppress(expr)
-    :(try; @suppress($(esc(expr))); catch e; @warn "Command failed... $(e) Retrying..."; $(esc(expr)); end;)
+function tryrun(cmd)
+    try
+        run(pipeline(cmd, stderr=devnull, stdout=devnull))
+    catch e
+        @warn "Command failed... $(e) Retrying..."
+        run(cmd)
+    end
 end
 
 abstract type QuantikzOp end
@@ -424,16 +428,16 @@ function string2image(string; scale=5, kw...)
         f = open("input.tex", "w")
         print(f,template)
         close(f)
-        @trysuppress tectonic() do bin
-            run(`$bin input.tex`)
+        tectonic() do bin
+            tryrun(`$bin input.tex`)
         end
         # Workaround for imagemagick failing to find gs on Windows (see https://github.com/JuliaIO/ImageMagick.jl/issues/198)
         #gs() do bin
         #    return load("input.pdf")
         #end
         if isnothing(savefile)
-            @trysuppress gs() do bin
-                run(`$bin -dNOPAUSE -sDEVICE=png16m -dSAFER -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=2 -dTextAlphaBits=4 -dGraphicsAlphaBits=1 -dDownScaleFactor=8 -r800 -sOutputFile=input.png input.pdf -dBATCH`)
+            gs() do bin
+                tryrun(`$bin -dNOPAUSE -sDEVICE=png16m -dSAFER -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=2 -dTextAlphaBits=4 -dGraphicsAlphaBits=1 -dDownScaleFactor=8 -r800 -sOutputFile=input.png input.pdf -dBATCH`)
             end
             return load("input.png")
         else
