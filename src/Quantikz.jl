@@ -161,6 +161,8 @@ struct U <: QuantikzOp
 end
 
 U(target::Integer) = U("\\;\\;", target)
+U(targets::AbstractVector{<:Integer}) = MultiControlU("\\;\\;", targets)
+U(str::AbstractString, targets::AbstractVector{<:Integer}) = MultiControlU(str, targets)
 
 affectedqubits(u::U) = [u.target]
 function update_table!(qtable,step,u::U)
