@@ -115,7 +115,7 @@ MultiControlU(str::AbstractString,control::Integer,target::Integer) = MultiContr
 MultiControlU(control::Integer,target::Integer) = MultiControlU("\\;\\;",[control],[],[target])
 
 affectedqubits(g::MultiControlU) = [g.control...,g.ocontrol...,g.target...]
-function update_table!(qtable,step,g::MultiControlU) # TODO displaycircuit([CNOT([1,4],[3],[2,5])]) has bad ocircle covered by line and a disconnected target
+function update_table!(qtable,step,g::MultiControlU)
     table = qtable.table
     control = g.control
     ocontrol = g.ocontrol
@@ -130,15 +130,7 @@ function update_table!(qtable,step,g::MultiControlU) # TODO displaycircuit([CNOT
     else
         startpoint = min(M,controls[1][2])
     end
-    offset = iseven(M-m) && (m+M)/2 ∉ target ? ",label style={yshift=0.2cm}" : ""
-    table[m,step] = "\\gate[$(M-m+1)$(offset)]{$(g.str)}"
-    for i in m+1:M
-        if i ∉ target
-            table[i,step] = "\\linethrough"
-        else
-            table[i,step] = ""
-        end
-    end
+    draw_rectangle!(table,m,M,step,target,g.str)
     for (str, i) in controls
         if i > M && startpoint < M
             if startpoint < m
@@ -153,6 +145,24 @@ function update_table!(qtable,step,g::MultiControlU) # TODO displaycircuit([CNOT
         table[m,step] *= "\\vqw{$(startpoint-m)}"
     end
     qtable
+end
+
+function draw_rectangle!(table,m,M,step,targets,str)
+    deleted = Int[]
+    for i in m+1:M
+        if i ∉ targets 
+            if strip(table[i,step-1])==""
+                push!(deleted, i)
+            else
+                table[i,step] = "\\linethrough"
+            end
+        else
+            table[i,step] = ""
+        end
+    end
+    offset = iseven(M-m) && ((m+M)/2 ∉ vcat(targets,deleted)) ? ",label style={yshift=0.2cm}" : ""
+    nwires = isempty(deleted) ? "" : ",nwires={$(join(deleted,","))}"
+    table[m,step] = "\\gate[$(M-m+1)$(offset)$(nwires)]{$(str)}"
 end
 
 struct U <: QuantikzOp
@@ -210,15 +220,7 @@ function update_table!(qtable,step,meas::Measurement)
     else
         step = step+1
         m,M = extrema(meas.targets)
-        offset = iseven(M-m) && (m+M)/2 ∉ meas.targets ? ",label style={yshift=0.2cm}" : ""
-        table[m,step] = "\\gate[$(M-m+1)$(offset)]{$(meas.str)}"
-        for i in m+1:M
-            if i ∉ meas.targets
-                table[i,step] = "\\linethrough"
-            else
-                table[i,step] = ""
-            end
-        end
+        draw_rectangle!(table,m,M,step,meas.targets,meas.str)
         qubitsview(qtable)[meas.targets,step+1] .= "\\qw"
         ancillaryview(qtable)[1,step-1] = "\\lstick{}"
         ancillaryview(qtable)[1,step] = "\\ctrl{$(M-qtable.qubits-1)}"
@@ -250,15 +252,7 @@ affectedbits(g::ClassicalDecision) = g.bits
 function update_table!(qtable,step,g::ClassicalDecision)
     table = qtable.table
     m,M = extrema(g.targets) # TODO this piece of code is repeated frequently, abstract it away
-    offset = iseven(M-m) && (m+M)/2 ∉ g.targets ? ",label style={yshift=0.2cm}" : ""
-    table[m,step] = "\\gate[$(M-m+1)$(offset)]{$(g.str)}"
-    for i in m+1:M
-        if i ∉ g.targets
-            table[i,step] = "\\linethrough"
-        else
-            table[i,step] = ""
-        end
-    end
+    draw_rectangle!(table,m,M,step,g.targets,g.str)
     startpoint = minimum(g.bits)
     bitsview(qtable)[startpoint,step] = "\\cwbend{$(-(qtable.qubits-M)-qtable.ancillaries-startpoint)}"
     for b in sort(g.bits)[2:end]

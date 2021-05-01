@@ -70,6 +70,23 @@ end
 @test circuit2string([Measurement(2),Measurement(1,1)]) == circuit2string([Measurement(2),Measurement(1,1)], mode=:expanded) == "\\begin{quantikz}[transparent, row sep={0.8cm,between origins}]\n\\qw & \\qw & \\meterD{} & \\\\\n\\qw & \\meterD{} &  & \\\\\n\\cw & \\cw & \\cwbend{-2} & \\cw\n\\end{quantikz}"
 end
 
+@testset "Avoiding placement of already deleted wires on top of rectangles" begin
+c =[Measurement(2),
+    U(3), U(3),
+    MultiControlU("A", [1, 3]),
+    U(3),
+    U("A", [1,4]),
+    U(3),
+    U([1,3]),
+    U(3),
+    Measurement([1,3]),
+    U(3),
+    ClassicalDecision([1,3],1)]
+@test circuit2string(c) == "\\begin{quantikz}[transparent, row sep={0.8cm,between origins}]\n\\qw & \\qw & \\qw & \\gate[3,nwires={2}]{A} & \\qw & \\gate[4,nwires={2}]{A} & \\qw & \\gate[3,nwires={2}]{\\;\\;} & \\qw & \\qw & \\gate[3,nwires={2}]{\\;\\;} & \\qw & \\qw & \\gate[3,nwires={2}]{\\;\\;} & \\qw\\\\\n\\qw & \\meterD{} &  &  &  &  &  &  &  &  &  &  &  &  & \\\\\n\\qw & \\gate{\\;\\;} & \\gate{\\;\\;} &  & \\gate{\\;\\;} & \\linethrough & \\gate{\\;\\;} &  & \\gate{\\;\\;} & \\qw &  & \\qw & \\gate{\\;\\;} &  & \\qw\\\\\n\\qw & \\qw & \\qw & \\qw & \\qw &  & \\qw & \\qw & \\qw & \\qw & \\qw & \\qw & \\qw & \\qw & \\qw\\\\\n &  &  &  &  &  &  &  &  & \\lstick{} & \\ctrl{-2} & \\meterD{} &  &  & \\\\\n\\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cwbend{-3} & \\cw\n\\end{quantikz}"
+@test circuit2string(c,mode=:expanded) == "\\begin{quantikz}[transparent, row sep={0.8cm,between origins}]\n\\qw & \\qw & \\qw & \\qw & \\gate[3,nwires={2}]{A} & \\qw & \\gate[4,nwires={2}]{A} & \\qw & \\gate[3,nwires={2}]{\\;\\;} & \\qw & \\qw & \\gate[3,nwires={2}]{\\;\\;} & \\qw & \\qw & \\gate[3,nwires={2}]{\\;\\;} & \\qw\\\\\n\\qw & \\meterD{} &  &  &  &  &  &  &  &  &  &  &  &  &  & \\\\\n\\qw & \\qw & \\gate{\\;\\;} & \\gate{\\;\\;} &  & \\gate{\\;\\;} & \\linethrough & \\gate{\\;\\;} &  & \\gate{\\;\\;} & \\qw &  & \\qw & \\gate{\\;\\;} &  & \\qw\\\\\n\\qw & \\qw & \\qw & \\qw & \\qw & \\qw &  & \\qw & \\qw & \\qw & \\qw & \\qw & \\qw & \\qw & \\qw & \\qw\\\\\n &  &  &  &  &  &  &  &  &  & \\lstick{} & \\ctrl{-2} & \\meterD{} &  &  & \\\\\n\\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cwbend{-3} & \\cw\n\\end{quantikz}"
+end
+    
+
 end
 
 function filetests()
