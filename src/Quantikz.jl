@@ -21,7 +21,7 @@ export MultiControl, CNOT, CPHASE, SWAP, H, P, Id, U,
        string2image,
        circuit2image,
        displaycircuit,
-       savecircuit, savetex
+       savecircuit
 
 quantikzname = "tikzlibraryquantikz.code.tex"
 quantikzfile = joinpath(artifact"quantikz", "quantikz-0.9.6", quantikzname)
@@ -478,7 +478,5 @@ function savetex(circuit,qubits,filename; kw...)
     print(f,string)
     close(f)
 end
-
-savetex(circuit, filename; kw...) = savetex(circuit, circuitwidth(circuit), filename; kw...)
 
 end
