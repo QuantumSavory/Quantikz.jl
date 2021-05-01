@@ -79,7 +79,7 @@ CPHASE(t1::Integer,t2::Integer) = MultiControl([t1,t2],[],[],[])
 SWAP(t1::Integer,t2::Integer) = MultiControl([],[],[],[t1,t2])
 
 affectedqubits(g::MultiControl) = [g.control...,g.ocontrol...,g.target...,g.targetX...]
-function update_table!(qtable,step,g::MultiControl) # TODO displaycircuit([CNOT([1,4],[3],[2,5])]) has bad ocircle covered by line and a disconnected target
+function update_table!(qtable,step,g::MultiControl)
     table = qtable.table
     control = g.control
     ocontrol = g.ocontrol
@@ -251,7 +251,7 @@ affectedqubits(g::ClassicalDecision) = g.targets
 affectedbits(g::ClassicalDecision) = g.bits
 function update_table!(qtable,step,g::ClassicalDecision)
     table = qtable.table
-    m,M = extrema(g.targets) # TODO this piece of code is repeated frequently, abstract it away
+    m,M = extrema(g.targets)
     draw_rectangle!(table,m,M,step,g.targets,g.str)
     startpoint = minimum(g.bits)
     bitsview(qtable)[startpoint,step] = "\\cwbend{$(-(qtable.qubits-M)-qtable.ancillaries-startpoint)}"
@@ -459,8 +459,7 @@ function displaystring(string)
     display(MIME"image/png"(),read(seekstart(io)))
 end
 
-function savecircuit(circuit,qubits,filename; scale=5, kw...) # TODO remove duplicated code
-    # Workaround for imagemagick failing to find gs on Windows (see https://github.com/JuliaIO/ImageMagick.jl/issues/198)
+function savecircuit(circuit,qubits,filename; scale=5, kw...)
     if endswith(filename, "pdf") || endswith(filename, "PDF")
         circuit2image(circuit, qubits; scale=scale, _workaround_savefile=filename)
         return
