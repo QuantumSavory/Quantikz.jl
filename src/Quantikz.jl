@@ -23,8 +23,11 @@ export MultiControl, CNOT, CPHASE, SWAP, H, P, Id, U,
        displaycircuit,
        savecircuit
 
-quantikzname = "tikzlibraryquantikz.code.tex"
-quantikzfile = joinpath(artifact"quantikz", "quantikz-0.9.6", quantikzname)
+const quantikzname = "tikzlibraryquantikz.code.tex"
+const quantikzfile = joinpath(artifact"quantikz", "quantikz-0.9.6", quantikzname)
+
+# This is necessary because typeof(ibegin:iend) <: AbstractRange is false
+const ArrayOrRange = Union{A,B,C} where {A<:AbstractVector, B<:EndpointRanges.EndpointUnitRange, C<:EndpointRanges.EndpointStepRange}
 
 function tryrun(cmd)
     try
@@ -68,10 +71,10 @@ nsteps(op::QuantikzOp) = 1
 deleteoutputs(op::QuantikzOp) = []
 
 struct MultiControl <: QuantikzOp
-    control::AbstractVector{Integer}
-    ocontrol::AbstractVector{Integer}
-    target::AbstractVector{Integer}
-    targetX::AbstractVector{Integer}
+    control::ArrayOrRange
+    ocontrol::ArrayOrRange
+    target::ArrayOrRange
+    targetX::ArrayOrRange
 end
 
 CNOT(c::Integer,t::Integer) = MultiControl([c],[],[t],[])
@@ -101,16 +104,16 @@ end
 
 struct MultiControlU <: QuantikzOp
     str::AbstractString
-    control::AbstractVector{Integer}
-    ocontrol::AbstractVector{Integer}
-    target::AbstractVector{Integer}
+    control::ArrayOrRange
+    ocontrol::ArrayOrRange
+    target::ArrayOrRange
 end
 
-MultiControlU(target::AbstractVector{<:Integer}) = MultiControlU("\\;\\;",[],[],target)
-MultiControlU(str::AbstractString, target::AbstractVector{<:Integer}) = MultiControlU(str,[],[],target)
-MultiControlU(control::AbstractVector{<:Integer},ocontrol::AbstractVector{<:Integer},target::AbstractVector{<:Integer}) = MultiControlU("\\;\\;",control,ocontrol,target)
-MultiControlU(str::AbstractString,control::Integer,target::AbstractVector{<:Integer}) = MultiControlU(str,[control],[],target)
-MultiControlU(control::Integer,target::AbstractVector{<:Integer}) = MultiControlU("\\;\\;",[control],[],target)
+MultiControlU(target::ArrayOrRange) = MultiControlU("\\;\\;",[],[],target)
+MultiControlU(str::AbstractString, target::ArrayOrRange) = MultiControlU(str,[],[],target)
+MultiControlU(control::ArrayOrRange,ocontrol::ArrayOrRange,target::ArrayOrRange) = MultiControlU("\\;\\;",control,ocontrol,target)
+MultiControlU(str::AbstractString,control::Integer,target::ArrayOrRange) = MultiControlU(str,[control],[],target)
+MultiControlU(control::Integer,target::ArrayOrRange) = MultiControlU("\\;\\;",[control],[],target)
 MultiControlU(str::AbstractString,control::Integer,target::Integer) = MultiControlU(str,[control],[],[target])
 MultiControlU(control::Integer,target::Integer) = MultiControlU("\\;\\;",[control],[],[target])
 
@@ -130,7 +133,7 @@ function update_table!(qtable,step,g::MultiControlU)
     else
         startpoint = min(M,controls[1][2])
     end
-    draw_rectangle!(table,m,M,step,target,g.str)
+    draw_rectangle!(table,step,target,g.str)
     for (str, i) in controls
         if i > M && startpoint < M
             if startpoint < m
@@ -147,8 +150,10 @@ function update_table!(qtable,step,g::MultiControlU)
     qtable
 end
 
-function draw_rectangle!(table,m,M,step,targets,str)
+function draw_rectangle!(table,step,targets,str)
     deleted = Int[]
+    m, M = explicit_extrema(table, targets) # TODO m M can be deduced from targets. They are not necessary here as arguments
+    targets = explicit_targets(table, targets)
     for i in m+1:M
         if i ∉ targets 
             if strip(table[i,step-1])==""
@@ -171,8 +176,8 @@ struct U <: QuantikzOp
 end
 
 U(target::Integer) = U("\\;\\;", target)
-U(targets::AbstractVector{<:Integer}) = MultiControlU("\\;\\;", targets)
-U(str::AbstractString, targets::AbstractVector{<:Integer}) = MultiControlU(str, targets)
+U(targets::ArrayOrRange) = MultiControlU("\\;\\;", targets)
+U(str::AbstractString, targets::ArrayOrRange) = MultiControlU(str, targets)
 
 affectedqubits(u::U) = [u.target]
 function update_table!(qtable,step,u::U)
@@ -197,17 +202,17 @@ end
 
 struct Measurement <: QuantikzOp
     str::AbstractString
-    targets::Vector{Integer}
+    targets::ArrayOrRange
     bit # might be nothing
 end
 
 Measurement(i::Integer) = Measurement("",[i],nothing)
 Measurement(str::AbstractString, i::Integer) = Measurement(str,[i],nothing)
-Measurement(str::AbstractString, is::AbstractVector{<:Integer}) = Measurement(str,is,nothing)
-Measurement(is::AbstractVector{<:Integer}) = Measurement("\\;\\;", is, nothing)
+Measurement(str::AbstractString, is::ArrayOrRange) = Measurement(str,is,nothing)
+Measurement(is::ArrayOrRange) = Measurement("\\;\\;", is, nothing)
 Measurement(i::Integer, b::Integer) = Measurement("",[i],b)
 Measurement(str::AbstractString, i::Integer, b::Integer) = Measurement(str,[i],b)
-Measurement(is::AbstractVector{<:Integer}, b::Integer) = Measurement("\\;\\;", is, b)
+Measurement(is::ArrayOrRange, b::Integer) = Measurement("\\;\\;", is, b)
 
 affectedqubits(m::Measurement) = m.targets
 function update_table!(qtable,step,meas::Measurement)
@@ -220,7 +225,7 @@ function update_table!(qtable,step,meas::Measurement)
     else
         step = step+1
         m,M = extrema(meas.targets)
-        draw_rectangle!(table,m,M,step,meas.targets,meas.str)
+        draw_rectangle!(table,step,meas.targets,meas.str)
         qubitsview(qtable)[meas.targets,step+1] .= "\\qw"
         ancillaryview(qtable)[1,step-1] = "\\lstick{}"
         ancillaryview(qtable)[1,step] = "\\ctrl{$(M-qtable.qubits-1)}"
@@ -238,25 +243,32 @@ deleteoutputs(m::Measurement) = length(m.targets) == 1 ? m.targets : []
 
 struct ClassicalDecision <: QuantikzOp
     str::AbstractString
-    targets::Vector{Integer}
-    bits::Vector{Integer}
+    targets::ArrayOrRange
+    bits::ArrayOrRange
 end
 
 ClassicalDecision(str::AbstractString, t::Integer, c::Integer) = ClassicalDecision(str, [t], [c])
-ClassicalDecision(str::AbstractString, t::AbstractVector{<:Integer}, c::Integer) = ClassicalDecision(str, t, [c])
+ClassicalDecision(str::AbstractString, t::ArrayOrRange, c::Integer) = ClassicalDecision(str, t, [c])
+ClassicalDecision(str::AbstractString, t::Integer, c::ArrayOrRange) = ClassicalDecision(str, [t], c)
 ClassicalDecision(t::Integer, c::Integer) = ClassicalDecision("\\;\\;", [t], [c])
-ClassicalDecision(t::AbstractVector{<:Integer}, c::Integer) = ClassicalDecision("\\;\\;", t, [c])
+ClassicalDecision(t::ArrayOrRange, c::Integer) = ClassicalDecision("\\;\\;", t, [c])
+ClassicalDecision(t::Integer, c::ArrayOrRange) = ClassicalDecision("\\;\\;", [t], c)
+ClassicalDecision(t::ArrayOrRange, c::ArrayOrRange) = ClassicalDecision("\\;\\;", t, c)
 
 affectedqubits(g::ClassicalDecision) = g.targets
 affectedbits(g::ClassicalDecision) = g.bits
 function update_table!(qtable,step,g::ClassicalDecision)
     table = qtable.table
-    m,M = extrema(g.targets)
-    draw_rectangle!(table,m,M,step,g.targets,g.str)
-    startpoint = minimum(g.bits)
-    bitsview(qtable)[startpoint,step] = "\\cwbend{$(-(qtable.qubits-M)-qtable.ancillaries-startpoint)}"
-    for b in sort(g.bits)[2:end]
-        bitsview(qtable)[b,step] = "\\cwbend{$(startpoint-b)}"
+    qvtable = qubitsview(qtable)
+    bvtable = bitsview(qtable)
+    m, M = explicit_extrema(qvtable, g.targets)
+    targets = explicit_targets(qvtable, g.targets)
+    draw_rectangle!(qvtable,step,g.targets,g.str)
+    bits = explicit_targets(bvtable, g.bits)
+    startpoint = minimum(bits)
+    bvtable[startpoint,step] = "\\cwbend{$(-(qtable.qubits-M)-qtable.ancillaries-startpoint)}"
+    for b in sort(bits)[2:end]
+        bvtable[b,step] = "\\cwbend{$(startpoint-b)}"
         startpoint = b
     end
     qtable
@@ -264,7 +276,7 @@ end
 
 struct ParityMeasurement <: QuantikzOp
     paulis::AbstractVector{String}
-    qubits::AbstractVector{Integer}
+    qubits::ArrayOrRange
 end
 
 affectedqubits(pm::ParityMeasurement) = pm.qubits
@@ -285,39 +297,30 @@ end
 deleteoutputs(m::ParityMeasurement) = affectedqubits(m)
 
 struct Noise <: QuantikzOp
-    qubits::AbstractVector{Integer}
+    qubits::ArrayOrRange
 end
 
 affectedqubits(n::Noise) = n.qubits
 function update_table!(qtable,step,n::Noise)
-    table = qtable.table
-    for q in n.qubits
-        table[q,step] = "\\gate[1,style={starburst,starburst points=7,inner xsep=-2pt,inner ysep=-2pt,scale=0.5}]{}"
+    qvtable = qubitsview(qtable)
+    for q in explicit_targets(qvtable,n.qubits)
+        qvtable[q,step] = "\\gate[1,style={starburst,starburst points=7,inner xsep=-2pt,inner ysep=-2pt,scale=0.5}]{}"
     end
     qtable
 end
 
-struct NoiseAll <: QuantikzOp
-end
-
-affectedqubits(n::NoiseAll) = ibegin:iend
-function update_table!(qtable,step,n::NoiseAll)
-    table = qubitsview(qtable)
-    table[:,step] .= ["\\gate[1,style={starburst,starburst points=7,inner xsep=-2pt,inner ysep=-2pt,scale=0.5}]{}"]
-    qtable
-end
+NoiseAll() = Noise(ibegin:iend)
 
 const PADDING = 1
 
-circuitwidth(circuit) = maximum([affectedqubits(o)==ibegin:iend ? 1 : maximum(affectedqubits(o)) for o in circuit])
-function circuitwidthbits(circuit) 
-    bits = vcat(map(affectedbits,circuit)...)
-    if isempty(bits)
-        return 0
-    else
-        return maximum(bits)
-    end
-end
+conservative_maximum(a::AbstractVector)=  isempty(a) ? 1 : maximum(a)
+conservative_maximum(a) = 1 # This captures EndpointRanges and other things... TODO might be a bit too conservative
+moreconservative_maximum(a::AbstractVector)=  isempty(a) ? 0 : maximum(a)
+moreconservative_maximum(a) = 1
+circuitwidth(op::QuantikzOp) = conservative_maximum(affectedqubits(op))
+circuitwidth(circuit) = maximum(circuitwidth.(circuit))
+circuitwidthbits(op::QuantikzOp) = moreconservative_maximum(affectedbits(op))
+circuitwidthbits(circuit) = maximum(circuitwidthbits.(circuit))
 
 function QuantikzTable(circuit::AbstractVector, qubits::Integer)
     steps = sum(map(nsteps, circuit))
@@ -338,45 +341,41 @@ function circuit2table_expanded(circuit, qubits)
     return table
 end
 
-Base.extrema(r::EndpointRanges.EndpointUnitRange) = (r.start, r.stop) # TODO submit these to EndpointRanges (and make them <:AbstractRange)
-Base.extrema(r::EndpointRanges.EndpointStepRange) = r.step>0 ? (r.start, r.stop) : (r.stop, r.start)
-function extremarange(r::AbstractVector)
-    if isempty(r)
-        return r
-    else
-        start, stop = extrema(r)
-        return start:stop
-    end
+function explicit_extrema(table,r)
+    t = explicit_targets(table,r)
+    isempty(t) ? t : extrema(t)
 end
-function extremarange(r) # TODO should really be AbstractRange
-    start, stop = extrema(r)
-    return start:stop
+function explicit_targets(table,targets)
+    targets = (1:size(table,1))[targets]
 end
-
+function extrema2range(e)
+    isempty(e) ? e : e[1]:e[2]
+end
 
 function circuit2table_compressed(circuit, qubits)
     table = QuantikzTable(circuit, qubits)
+    qvtable = qubitsview(table)
+    bvtable = bitsview(table)
     filled_up_to = fill(1+PADDING,qubits)
     afilled_up_to = fill(1+PADDING,table.ancillaries)
     bfilled_up_to = fill(1+PADDING,table.bits)
     for op in circuit
-        if isempty(affectedbits(op)) && neededancillaries(op)==0
-            qubits = extremarange(affectedqubits(op))
-        else
-            qubits = minimum(affectedqubits(op)):iend
+        qubits = extrema2range(explicit_extrema(qvtable, affectedqubits(op)))
+        if circuitwidthbits(op)!=0 || neededancillaries(op)!=0
+            qubits = minimum(qubits):iend
         end
-        bits = extremarange(affectedbits(op))
+        bits = extrema2range(explicit_extrema(bvtable, affectedbits(op)))
         ancillaries = neededancillaries(op)
         steps = nsteps(op)
         current_step = maximum([filled_up_to[qubits]...,afilled_up_to[1:ancillaries]...,bfilled_up_to[bits]...])
         filled_up_to[qubits] .= current_step+steps
         afilled_up_to[1:ancillaries] .= current_step+steps
-        if !isempty(affectedbits(op))
+        if circuitwidthbits(op)!=0
             filled_up_to[qubits.stop:end] .= current_step+steps
             bfilled_up_to[bits] .= current_step+steps
         end
-        qubitsview(table)[affectedqubits(op),current_step:end] .= "\\qw"
-        qubitsview(table)[deleteoutputs(op),current_step:end] .= ""
+        qvtable[affectedqubits(op),current_step:end] .= "\\qw"
+        qvtable[deleteoutputs(op),current_step:end] .= ""
         update_table!(table,current_step,op)
     end
     return QuantikzTable(table.table[:,1:maximum(filled_up_to)-1+PADDING],table.qubits,table.ancillaries,table.bits)

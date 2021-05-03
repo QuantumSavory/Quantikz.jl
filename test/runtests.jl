@@ -1,4 +1,4 @@
-using Quantikz, Test
+using Quantikz, Test, EndpointRanges
 
 function stringtests()
 @testset "Misc string conversions" begin
@@ -85,7 +85,12 @@ c =[Measurement(2),
 @test circuit2string(c) == "\\begin{quantikz}[transparent, row sep={0.8cm,between origins}]\n\\qw & \\qw & \\qw & \\gate[3,nwires={2}]{A} & \\qw & \\gate[4,nwires={2}]{A} & \\qw & \\gate[3,nwires={2}]{\\;\\;} & \\qw & \\qw & \\gate[3,nwires={2}]{\\;\\;} & \\qw & \\qw & \\gate[3,nwires={2}]{\\;\\;} & \\qw\\\\\n\\qw & \\meterD{} &  &  &  &  &  &  &  &  &  &  &  &  & \\\\\n\\qw & \\gate{\\;\\;} & \\gate{\\;\\;} &  & \\gate{\\;\\;} & \\linethrough & \\gate{\\;\\;} &  & \\gate{\\;\\;} & \\qw &  & \\qw & \\gate{\\;\\;} &  & \\qw\\\\\n\\qw & \\qw & \\qw & \\qw & \\qw &  & \\qw & \\qw & \\qw & \\qw & \\qw & \\qw & \\qw & \\qw & \\qw\\\\\n &  &  &  &  &  &  &  &  & \\lstick{} & \\ctrl{-2} & \\meterD{} &  &  & \\\\\n\\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cwbend{-3} & \\cw\n\\end{quantikz}"
 @test circuit2string(c,mode=:expanded) == "\\begin{quantikz}[transparent, row sep={0.8cm,between origins}]\n\\qw & \\qw & \\qw & \\qw & \\gate[3,nwires={2}]{A} & \\qw & \\gate[4,nwires={2}]{A} & \\qw & \\gate[3,nwires={2}]{\\;\\;} & \\qw & \\qw & \\gate[3,nwires={2}]{\\;\\;} & \\qw & \\qw & \\gate[3,nwires={2}]{\\;\\;} & \\qw\\\\\n\\qw & \\meterD{} &  &  &  &  &  &  &  &  &  &  &  &  &  & \\\\\n\\qw & \\qw & \\gate{\\;\\;} & \\gate{\\;\\;} &  & \\gate{\\;\\;} & \\linethrough & \\gate{\\;\\;} &  & \\gate{\\;\\;} & \\qw &  & \\qw & \\gate{\\;\\;} &  & \\qw\\\\\n\\qw & \\qw & \\qw & \\qw & \\qw & \\qw &  & \\qw & \\qw & \\qw & \\qw & \\qw & \\qw & \\qw & \\qw & \\qw\\\\\n &  &  &  &  &  &  &  &  &  & \\lstick{} & \\ctrl{-2} & \\meterD{} &  &  & \\\\\n\\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cw & \\cwbend{-3} & \\cw\n\\end{quantikz}"
 end
-    
+
+@testset "EndpointRanges in ClassicalDecision" begin
+c = [U(5),ClassicalDecision(ibegin:iend,2),ClassicalDecision(1,ibegin:iend)]
+@test circuit2string(c) == circuit2string(c,mode=:expanded) == "\\begin{quantikz}[transparent, row sep={0.8cm,between origins}]\n\\qw & \\qw & \\gate[5]{\\;\\;} & \\gate[1]{\\;\\;} & \\qw\\\\\n\\qw & \\qw &  & \\qw & \\qw\\\\\n\\qw & \\qw &  & \\qw & \\qw\\\\\n\\qw & \\qw &  & \\qw & \\qw\\\\\n\\qw & \\gate{\\;\\;} &  & \\qw & \\qw\\\\\n\\cw & \\cw & \\cw & \\cwbend{-5} & \\cw\\\\\n\\cw & \\cw & \\cwbend{-2} & \\cwbend{-1} & \\cw\n\\end{quantikz}"
+@test circuit2string([ClassicalDecision(ibegin:iend,ibegin:iend)]) == circuit2string([ClassicalDecision(ibegin:iend,ibegin:iend)],mode=:expanded) == "\\begin{quantikz}[transparent, row sep={0.8cm,between origins}]\n\\qw & \\gate[1]{\\;\\;} & \\qw\\\\\n\\cw & \\cwbend{-1} & \\cw\n\\end{quantikz}"
+end
 
 end
 
