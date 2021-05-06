@@ -39,6 +39,7 @@ function tryrun(cmd)
 end
 
 abstract type QuantikzOp end
+QuantikzOp(q::QuantikzOp) = q
 
 struct QuantikzTable
     table::Matrix{String}
@@ -317,10 +318,10 @@ conservative_maximum(a::AbstractVector)=  isempty(a) ? 1 : maximum(a)
 conservative_maximum(a) = 1 # This captures EndpointRanges and other things... TODO might be a bit too conservative
 moreconservative_maximum(a::AbstractVector)=  isempty(a) ? 0 : maximum(a)
 moreconservative_maximum(a) = 1
-circuitwidth(op::QuantikzOp) = conservative_maximum(affectedqubits(op))
-circuitwidth(circuit) = maximum(circuitwidth.(circuit))
-circuitwidthbits(op::QuantikzOp) = moreconservative_maximum(affectedbits(op))
-circuitwidthbits(circuit) = maximum(circuitwidthbits.(circuit))
+circuitwidth(op) = conservative_maximum(affectedqubits(op))
+circuitwidth(circuit::AbstractArray) = maximum(circuitwidth.(circuit))
+circuitwidthbits(op) = moreconservative_maximum(affectedbits(op))
+circuitwidthbits(circuit::AbstractArray) = maximum(circuitwidthbits.(circuit))
 
 function QuantikzTable(circuit::AbstractVector, qubits::Integer)
     steps = sum(map(nsteps, circuit))
