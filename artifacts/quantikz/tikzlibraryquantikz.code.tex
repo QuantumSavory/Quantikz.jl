@@ -4,6 +4,8 @@
 % If you find this library useful, please cite its usage in your work, using arXiv:1809.03842, and possibly the DOI: 10.17637/rh.7000520.
 % Usage is at your own risk.
 
+%local patches:
+%	"disable auto height" now does not disable the auto-width
 %version 0.9.6:
 %	changed packaging so there isn't a compile warning any more
 %	modified the meter command so that \meter[draw=blue]{} colours everything blue, not just outline.
@@ -168,7 +170,7 @@
  	}{%not a swap gate
  		\settowidth{\myl}{$#4$}
  		\ifthenelse{\DisableMinSize=1}{%disable automatic size detection. Use $U$ instead.
- 			\phantom{U}
+ 			\phantom{#4}
  			\settoheight{\myh}{$U$}
  			\settodepth{\myd}{$U$}
  		}{%automatically get width and height of label
