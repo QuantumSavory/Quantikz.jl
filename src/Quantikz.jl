@@ -168,7 +168,8 @@ function draw_rectangle!(table,step,targets,str)
     end
     offset = iseven(M-m) && ((m+M)/2 ∉ vcat(targets,deleted)) ? ",label style={yshift=0.2cm}" : ""
     nwires = isempty(deleted) ? "" : ",nwires={$(join(deleted,","))}"
-    table[m,step] = "\\gate[$(M-m+1)$(offset)$(nwires)]{$(str)}"
+    autoheight = M-m+1>1 ? ",disable auto height" : ""
+    table[m,step] = "\\gate[$(M-m+1)$(offset)$(nwires)$(autoheight)]{$(str)}"
 end
 
 struct U <: QuantikzOp
@@ -397,7 +398,7 @@ circuit2table(circuit; kw...) = circuit2table(circuit, circuitwidth(circuit); kw
 function table2string(qtable; sep=0.8, quantikzoptions=nothing, kw...)
     lstr = join([join(row," & ") for row in eachrow(qtable.table)], "\\\\\n")
     if isnothing(quantikzoptions)
-        opts = "transparent, row sep={$(sep)cm,between origins}"
+        opts = "row sep={$(sep)cm,between origins}"
     else
         opts = quantikzoptions
     end
