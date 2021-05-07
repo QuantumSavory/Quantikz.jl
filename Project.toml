@@ -1,7 +1,7 @@
 name = "Quantikz"
 uuid = "b0d11df0-eea3-4d79-b4a5-421488cbf74b"
 authors = ["Stefan Krastanov <stefan@krastanov.org>"]
-version = "1.0.6"
+version = "1.0.7"
 
 [deps]
 EndpointRanges = "340492b5-2a47-5f55-813d-aca7ddf97656"
