@@ -166,7 +166,7 @@ function draw_rectangle!(table,step,targets,str)
             table[i,step] = ""
         end
     end
-    offset = iseven(M-m) && ((m+M)/2 ∉ vcat(targets,deleted)) ? ",label style={yshift=0.2cm}" : ""
+    offset = iseven(M-m) && ((m+M)/2 ∉ vcat(targets,deleted)) && !occursin("\\\\",str) ? ",label style={yshift=0.2cm}" : ""
     nwires = isempty(deleted) ? "" : ",nwires={$(join(deleted,","))}"
     autoheight = M-m+1>1 ? ",disable auto height" : ""
     table[m,step] = "\\gate[$(M-m+1)$(offset)$(nwires)$(autoheight)]{$(str)}"
