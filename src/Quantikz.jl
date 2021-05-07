@@ -398,7 +398,7 @@ circuit2table(circuit; kw...) = circuit2table(circuit, circuitwidth(circuit); kw
 function table2string(qtable; sep=0.8, quantikzoptions=nothing, kw...)
     lstr = join([join(row," & ") for row in eachrow(qtable.table)], "\\\\\n")
     if isnothing(quantikzoptions)
-        opts = "row sep={$(sep)cm,between origins}"
+        opts = "transparent, row sep={$(sep)cm,between origins}"
     else
         opts = quantikzoptions
     end
