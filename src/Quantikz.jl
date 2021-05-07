@@ -24,7 +24,7 @@ export MultiControl, CNOT, CPHASE, SWAP, H, P, Id, U,
        savecircuit
 
 const quantikzname = "tikzlibraryquantikz.code.tex"
-const quantikzfile = joinpath(artifact"quantikz", "quantikz-0.9.6", quantikzname)
+const quantikzfile = joinpath(artifact"quantikz", "quantikz", quantikzname)
 
 # This is necessary because typeof(ibegin:iend) <: AbstractRange is false
 const ArrayOrRange = Union{A,B,C} where {A<:AbstractVector, B<:EndpointRanges.EndpointUnitRange, C<:EndpointRanges.EndpointStepRange}

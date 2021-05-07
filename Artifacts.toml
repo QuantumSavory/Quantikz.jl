@@ -1,6 +1,6 @@
 [quantikz]
-git-tree-sha1 = "82b25296402c99b49afcb3bac60da01a77d6aae5"
+git-tree-sha1 = "1f9a6c11d06052f139e82ca988edaadf4e08c1ab"
 
     [[quantikz.download]]
-    sha256 = "b3a6ca4372f0afd3dfb6699cbbfc87deee2c8ebe6d70cb955f66d4de0e6e4581"
-    url = "https://github.com/Krastanov/Quantikz/raw/0b0bb4c28612d6bf2603c4a66f101f4ad1f42427/artifacts/quantikz-0.9.6.tar.gz"
+    sha256 = "efe24c2eb7d7e447693c126451b1bec59847841e294bdb620b7e56abd6305e5f"
+    url = "https://github.com/Krastanov/Quantikz/raw/e4999f109f26837944c8bf665daacbd6604bff14/artifacts/quantikz-patched.tar.gz"
