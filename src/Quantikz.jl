@@ -163,7 +163,7 @@ function draw_rectangle!(table,step,targets,str)
                 table[i,step] = "\\linethrough"
             end
         else
-            table[i,step] = ""
+            table[i,step] = "\\qw"
         end
     end
     offset = iseven(M-m) && ((m+M)/2 ∉ vcat(targets,deleted)) && !occursin("\\\\",str) ? ",label style={yshift=0.2cm}" : ""
