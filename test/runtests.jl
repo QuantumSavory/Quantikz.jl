@@ -98,6 +98,11 @@ circuit = [ClassicalDecision(ibegin:iend,ibegin:iend)]
 @test circuit2string(circuit) == circuit2string(circuit,mode=:expanded) == "\\begin{quantikz}[transparent, row sep={0.8cm,between origins}]\n\\qw & \\gate[1]{\\;\\;} & \\qw\\\\\n\\cw & \\cwbend{-1} & \\cw\n\\end{quantikz}"
 end
 
+@testset "Consecutive gates should not confuse the `deleted` count in `draw_rectangle`" begin
+circuit = [MultiControlU("XYZ",  [1], [2], [3,4,5]), MultiControlU("U_a",  [1], [2], [3,5])]
+@test circuit2string(circuit) == circuit2string(circuit,mode=:expanded) == "\\begin{quantikz}[transparent, row sep={0.8cm,between origins}]\n\\qw & \\ctrl{0} & \\ctrl{0} & \\qw\\\\\n\\qw & \\octrl{-1} & \\octrl{-1} & \\qw\\\\\n\\qw & \\gate[3,disable auto height]{XYZ}\\vqw{-1} & \\gate[3,label style={yshift=0.2cm},disable auto height]{U_a}\\vqw{-1} & \\qw\\\\\n\\qw & \\qw & \\linethrough & \\qw\\\\\n\\qw & \\qw & \\qw & \\qw\n\\end{quantikz}"
+end
+
 end
 
 function filetests()
