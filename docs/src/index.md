@@ -7,6 +7,7 @@ end
 ```
 
 A minimal package for drawing quantum circuits using the `quantikz`[^1] and `tikz` TeX libraries.
+See an online interactive demo at [quantikz.krastanov.org](https://quantikz.krastanov.org/).
 
 [^1]: [Tutorial on the Quantikz Package, Alastair Kay](https://arxiv.org/abs/1809.03842)
 
