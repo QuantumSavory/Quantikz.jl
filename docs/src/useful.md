@@ -79,6 +79,28 @@ MultiControl([1],[2],[3],[4])
 ParityMeasurement(["X","Y","Z"], [1,2,4])
 ```
 
+### Initial states or resets
+
+#### At the beginning of a circuit
+
+```@example 1
+Initialize("\\ket{\\phi}", [1,2,3])
+```
+
+```@example 1
+Initialize("\\ket{\\phi}", [1,2,4])
+```
+
+#### Midway through a circuit
+
+```@example 1
+[CNOT(1,2), Measurement(3), Initialize("\\ket{\\phi}", [2,3])]
+```
+
+```@example 1
+[CNOT(1,2), Measurement(1), Measurement(3), Initialize("\\ket{\\phi}", [1,3])]
+```
+
 ### Noise Events
 
 ```@example 1

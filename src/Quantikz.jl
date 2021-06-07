@@ -16,6 +16,7 @@ export MultiControl, CNOT, CPHASE, SWAP, H, P, Id, U,
        ClassicalDecision,
        Measurement, ParityMeasurement,
        Noise, NoiseAll,
+       Initialize,
        circuit2table, table2string,
        circuit2string,
        string2image,
@@ -151,11 +152,11 @@ function update_table!(qtable,step,g::MultiControlU)
     qtable
 end
 
-function draw_rectangle!(table,step,targets,str)
+function draw_rectangle!(table,step,targets,str;checkdelete_evenfortarget=false)
     deleted = Int[]
-    m, M = explicit_extrema(table, targets) # TODO m M can be deduced from targets. They are not necessary here as arguments
+    m, M = explicit_extrema(table, targets)
     targets = explicit_targets(table, targets)
-    for i in m+1:M
+    for i in m:M
         if i ∉ targets 
             if strip(table[i,step-1])==""
                 push!(deleted, i)
@@ -163,7 +164,12 @@ function draw_rectangle!(table,step,targets,str)
                 table[i,step] = "\\linethrough"
             end
         else
-            table[i,step] = "\\qw"
+            if checkdelete_evenfortarget && strip(table[i,step-1])==""
+                push!(deleted, i)
+                i!=m && (table[i,step] = "")
+            else
+                i!=m && (table[i,step] = "\\qw")
+            end
         end
     end
     offset = iseven(M-m) && ((m+M)/2 ∉ vcat(targets,deleted)) && !occursin("\\\\",str) ? ",label style={yshift=0.2cm}" : ""
@@ -243,6 +249,36 @@ nsteps(m::Measurement) = length(m.targets) > 1 ? 3 : 1
 affectedbits(m::Measurement) = isnothing(m.bit) ? [] : [m.bit]
 deleteoutputs(m::Measurement) = length(m.targets) == 1 ? m.targets : []
 
+struct Initialize <: QuantikzOp
+    str::AbstractString
+    targets::AbstractVector
+end
+
+affectedqubits(r::Initialize) = r.targets
+function update_table!(qtable,step,r::Initialize)
+    qvtable = qubitsview(qtable) 
+    m, M = extrema(r.targets)
+    targets = r.targets
+    if collect(targets) == collect(m:M)
+        qvtable[m,step] = "\\midstick[wires=$(M-m+1),brackets=right]{$(r.str)}"
+        for i in targets[2:end]
+            qvtable[i,step] = ""
+        end
+    else
+        for i in targets
+            qvtable[i,step] = ""
+        end
+        draw_rectangle!(qvtable, step+1, r.targets, r.str, checkdelete_evenfortarget=true)
+    end
+    qtable
+end
+function nsteps(r::Initialize)
+    m, M = extrema(r.targets)
+    targets = r.targets
+    collect(targets) == collect(m:M) ? 1 : 2
+end
+
+
 struct ClassicalDecision <: QuantikzOp
     str::AbstractString
     targets::ArrayOrRange
@@ -260,11 +296,9 @@ ClassicalDecision(t::ArrayOrRange, c::ArrayOrRange) = ClassicalDecision("\\;\\;"
 affectedqubits(g::ClassicalDecision) = g.targets
 affectedbits(g::ClassicalDecision) = g.bits
 function update_table!(qtable,step,g::ClassicalDecision)
-    table = qtable.table
     qvtable = qubitsview(qtable)
     bvtable = bitsview(qtable)
     m, M = explicit_extrema(qvtable, g.targets)
-    targets = explicit_targets(qvtable, g.targets)
     draw_rectangle!(qvtable,step,g.targets,g.str)
     bits = explicit_targets(bvtable, g.bits)
     startpoint = minimum(bits)
