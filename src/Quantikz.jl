@@ -121,7 +121,7 @@ MultiControlU(control::Integer,target::Integer) = MultiControlU("\\;\\;",[contro
 
 affectedqubits(g::MultiControlU) = [g.control...,g.ocontrol...,g.target...]
 function update_table!(qtable,step,g::MultiControlU)
-    table = qtable.table
+    table = qubitsview(qtable)
     control = g.control
     ocontrol = g.ocontrol
     target = g.target
@@ -224,7 +224,7 @@ Measurement(is::ArrayOrRange, b::Integer) = Measurement("\\;\\;", is, b)
 
 affectedqubits(m::Measurement) = m.targets
 function update_table!(qtable,step,meas::Measurement)
-    table = qtable.table
+    table = qubitsview(qtable)
     if length(meas.targets) == 1
         table[meas.targets[1],step] = "\\meterD{$(meas.str)}"
         if !isnothing(meas.bit)
