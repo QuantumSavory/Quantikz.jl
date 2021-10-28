@@ -1,7 +1,7 @@
 name = "Quantikz"
 uuid = "b0d11df0-eea3-4d79-b4a5-421488cbf74b"
 authors = ["Stefan Krastanov <stefan@krastanov.org>"]
-version = "1.1.1"
+version = "1.1.2"
 
 [deps]
 EndpointRanges = "340492b5-2a47-5f55-813d-aca7ddf97656"
@@ -16,5 +16,5 @@ EndpointRanges = "0.2"
 FileIO = "1.6"
 Ghostscript_jll = "9.53"
 ImageMagick = "1.1"
-Tectonic = "0.4, 0.5, 0.6, 0.8"
+Tectonic = "0.8"
 julia = "1.3"
