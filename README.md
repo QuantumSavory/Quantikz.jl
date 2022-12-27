@@ -1,9 +1,9 @@
 # Quantikz.jl
 
-[![Documentation of latest stable version](https://img.shields.io/badge/docs-stable-blue.svg)](https://krastanov.github.io/Quantikz/stable)
-[![Documentation of dev version](https://img.shields.io/badge/docs-dev-blue.svg)](https://krastanov.github.io/Quantikz/dev)
-[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/Krastanov/Quantikz/ci.yml?branch=main)](https://github.com/Krastanov/Quantikz/actions?query=workflow%3ACI+branch%3Amain)
-[![Test coverage from codecov](https://img.shields.io/codecov/c/gh/Krastanov/Quantikz?label=codecov)](https://codecov.io/gh/Krastanov/Quantikz)
+[![Documentation of latest stable version](https://img.shields.io/badge/docs-stable-blue.svg)](https://krastanov.github.io/Quantikz.jl/stable)
+[![Documentation of dev version](https://img.shields.io/badge/docs-dev-blue.svg)](https://krastanov.github.io/Quantikz.jl/dev)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/Krastanov/Quantikz.jl/ci.yml?branch=main)](https://github.com/Krastanov/Quantikz.jl/actions?query=workflow%3ACI+branch%3Amain)
+[![Test coverage from codecov](https://img.shields.io/codecov/c/gh/Krastanov/Quantikz.jl?label=codecov)](https://codecov.io/gh/Krastanov/Quantikz.jl)
 
 [![Live demo](https://img.shields.io/badge/live%20demo-render%20circuits%20in%20your%20browser-blueviolet)](https://quantikz.krastanov.org/)
 
