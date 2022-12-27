@@ -1,4 +1,6 @@
-using Quantikz, Test, EndpointRanges
+using Quantikz, Test
+using Quantikz.VendoredEndpointRanges
+const EndpointRanges = VendoredEndpointRanges
 
 function stringtests()
 @testset "Misc string conversions" begin

@@ -6,10 +6,13 @@ module Quantikz
 using Base.Filesystem
 using Pkg.Artifacts
 
-using EndpointRanges
 using FileIO
 using Ghostscript_jll
-using Tectonic
+using tectonic_jll
+
+include("EndpointRanges.jl")
+using .VendoredEndpointRanges
+const EndpointRanges = VendoredEndpointRanges
 
 export MultiControl, CNOT, CPHASE, SWAP, H, P, Id, U,
        MultiControlU,
@@ -157,7 +160,7 @@ function draw_rectangle!(table,step,targets,str;checkdelete_evenfortarget=false)
     m, M = explicit_extrema(table, targets)
     targets = explicit_targets(table, targets)
     for i in m:M
-        if i ∉ targets 
+        if i ∉ targets
             if strip(table[i,step-1])==""
                 push!(deleted, i)
             else
@@ -256,7 +259,7 @@ end
 
 affectedqubits(r::Initialize) = r.targets
 function update_table!(qtable,step,r::Initialize)
-    qvtable = qubitsview(qtable) 
+    qvtable = qubitsview(qtable)
     m, M = extrema(r.targets)
     targets = r.targets
     if collect(targets) == collect(m:M)
