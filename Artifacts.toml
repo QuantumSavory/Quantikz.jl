@@ -3,4 +3,4 @@ git-tree-sha1 = "1f9a6c11d06052f139e82ca988edaadf4e08c1ab"
 
     [[quantikz.download]]
     sha256 = "efe24c2eb7d7e447693c126451b1bec59847841e294bdb620b7e56abd6305e5f"
-    url = "https://github.com/Krastanov/Quantikz/raw/e4999f109f26837944c8bf665daacbd6604bff14/artifacts/quantikz-patched.tar.gz"
+    url = "https://github.com/QuantumSavory/Quantikz/raw/e4999f109f26837944c8bf665daacbd6604bff14/artifacts/quantikz-patched.tar.gz"
