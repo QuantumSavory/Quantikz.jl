@@ -112,8 +112,15 @@ struct MultiControlU <: QuantikzOp
     control::ArrayOrRange
     ocontrol::ArrayOrRange
     target::ArrayOrRange
+    target_notU::ArrayOrRange
 end
 
+function MultiControlU(str::AbstractString,
+    control::ArrayOrRange,
+    ocontrol::ArrayOrRange,
+    target::ArrayOrRange)
+    MultiControlU(str,control,ocontrol,target,[])
+end
 MultiControlU(target::ArrayOrRange) = MultiControlU("\\;\\;",[],[],target)
 MultiControlU(str::AbstractString, target::ArrayOrRange) = MultiControlU(str,[],[],target)
 MultiControlU(control::ArrayOrRange,ocontrol::ArrayOrRange,target::ArrayOrRange) = MultiControlU("\\;\\;",control,ocontrol,target)
@@ -122,15 +129,17 @@ MultiControlU(control::Integer,target::ArrayOrRange) = MultiControlU("\\;\\;",[c
 MultiControlU(str::AbstractString,control::Integer,target::Integer) = MultiControlU(str,[control],[],[target])
 MultiControlU(control::Integer,target::Integer) = MultiControlU("\\;\\;",[control],[],[target])
 
-affectedqubits(g::MultiControlU) = [g.control...,g.ocontrol...,g.target...]
+affectedqubits(g::MultiControlU) = [g.control...,g.ocontrol...,g.target...,g.target_notU...]
 function update_table!(qtable,step,g::MultiControlU)
     table = qubitsview(qtable)
     control = g.control
     ocontrol = g.ocontrol
     target = g.target
+    target_notU = g.target_notU
     controls = sort([
         [("\\ctrl",i) for i in control]...,
         [("\\octrl",i) for i in ocontrol]...,
+        [("\\targ{}\\vqw",i) for i in target_notU]...,
         ], by=e->e[2])
     m,M = extrema(target)
     if length(controls)==0
