@@ -304,17 +304,22 @@ ClassicalDecision(t::Integer, c::Integer) = ClassicalDecision("\\;\\;", [t], [c]
 ClassicalDecision(t::ArrayOrRange, c::Integer) = ClassicalDecision("\\;\\;", t, [c])
 ClassicalDecision(t::Integer, c::ArrayOrRange) = ClassicalDecision("\\;\\;", [t], c)
 ClassicalDecision(t::ArrayOrRange, c::ArrayOrRange) = ClassicalDecision("\\;\\;", t, c)
+ClassicalDecision(c::ArrayOrRange) = ClassicalDecision("", [], c)
 
 affectedqubits(g::ClassicalDecision) = g.targets
 affectedbits(g::ClassicalDecision) = g.bits
 function update_table!(qtable,step,g::ClassicalDecision)
     qvtable = qubitsview(qtable)
     bvtable = bitsview(qtable)
-    m, M = explicit_extrema(qvtable, g.targets)
-    draw_rectangle!(qvtable,step,g.targets,g.str)
     bits = explicit_targets(bvtable, g.bits)
     startpoint = minimum(bits)
-    bvtable[startpoint,step] = "\\cwbend{$(-(qtable.qubits-M)-qtable.ancillaries-startpoint)}"
+    if !isa(g.targets,AbstractVector) || length(g.targets)>0
+        m, M = explicit_extrema(qvtable, g.targets)
+        draw_rectangle!(qvtable,step,g.targets,g.str)
+        bvtable[startpoint,step] = "\\cwbend{$(-(qtable.qubits-M)-qtable.ancillaries-startpoint)}"
+    else
+        bvtable[startpoint,step] = "\\cwbend{0}"
+    end
     for b in sort(bits)[2:end]
         bvtable[b,step] = "\\cwbend{$(startpoint-b)}"
         startpoint = b
@@ -410,7 +415,11 @@ function circuit2table_compressed(circuit, qubits)
     for op in circuit
         qubits = extrema2range(explicit_extrema(qvtable, affectedqubits(op)))
         if circuitwidthbits(op)!=0 || neededancillaries(op)!=0
-            qubits = minimum(qubits):iend
+            qubits = if length(qubits)==0
+                ibegin:iend # TODO this branch is too pessimistic
+            else
+                minimum(qubits):iend
+            end
         end
         bits = extrema2range(explicit_extrema(bvtable, affectedbits(op)))
         ancillaries = neededancillaries(op)

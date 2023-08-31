@@ -108,9 +108,18 @@ end
 @testset "EndpointRanges in ClassicalDecision" begin
 circuit = [U(5),ClassicalDecision(ibegin:iend,2),ClassicalDecision(1,ibegin:iend)]
 @test circuit2string(circuit) == circuit2string(circuit,mode=:expanded) == "\\begin{quantikz}[transparent, row sep={0.8cm,between origins}]\n\\qw & \\qw & \\gate[5,disable auto height]{\\;\\;} & \\gate[1]{\\;\\;} & \\qw\\\\\n\\qw & \\qw & \\qw & \\qw & \\qw\\\\\n\\qw & \\qw & \\qw & \\qw & \\qw\\\\\n\\qw & \\qw & \\qw & \\qw & \\qw\\\\\n\\qw & \\gate{\\;\\;} & \\qw & \\qw & \\qw\\\\\n\\cw & \\cw & \\cw & \\cwbend{-5} & \\cw\\\\\n\\cw & \\cw & \\cwbend{-2} & \\cwbend{-1} & \\cw\n\\end{quantikz}"
+circuit2string(circuit,mode=:compressed)
 circuit = [ClassicalDecision(ibegin:iend,ibegin:iend)]
 @test circuit2string(circuit) == circuit2string(circuit,mode=:expanded) == "\\begin{quantikz}[transparent, row sep={0.8cm,between origins}]\n\\qw & \\gate[1]{\\;\\;} & \\qw\\\\\n\\cw & \\cwbend{-1} & \\cw\n\\end{quantikz}"
+circuit2string(circuit,mode=:compressed)
 end
+
+@testset "no quantum component in ClassicalDecision" begin
+circuit = [U(5),ClassicalDecision([2]),ClassicalDecision(ibegin:iend)]
+@test circuit2string(circuit) == circuit2string(circuit,mode=:expanded)
+circuit2string(circuit,mode=:compressed)
+end
+
 
 @testset "Consecutive gates should not confuse the `deleted` count in `draw_rectangle`" begin
 circuit = [MultiControlU("XYZ",  [1], [2], [3,4,5]), MultiControlU("U_a",  [1], [2], [3,5])]
