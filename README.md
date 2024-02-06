@@ -61,7 +61,7 @@ And expanded for easier identification:
 
 The general purpose `MultiControl(controls, ocontrols, targets, targetXs)` can be used to create an arbitrary combination of muticontrol multiqubit gates. Each argument lists the indices of qubits that should get a certain symbol: `controls` is filled circles, `ocontrols` is empty circles, `targets` is the NOT symbol, and `targetXs` is the X symbols.
 
-For named controled gates use `MultiControlU(str, controls, ocontrols, targets)`.
+For named controlled gates use `MultiControlU(str, controls, ocontrols, targets)`.
 
 For noise events, you can use `Noise(targets)` or `NoiseAll()`.
 
