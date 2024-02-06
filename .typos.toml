@@ -3,5 +3,5 @@ ket = "ket"
 
 [type.ipynb]
 # It detects false possitives in the base64 encoded images inside notebooks
-extend-glob = ["*.ipynb"]
+extend-glob = ["*.ipynb", "*.tex"]
 check-file = false
