@@ -4,6 +4,7 @@ A module for drawing quantum circuits through the Quantikz latex package.
 module Quantikz
 
 using Base.Filesystem
+using Base.ScopedValues: @with, ScopedValue
 using Pkg.Artifacts
 
 using FileIO
@@ -25,10 +26,14 @@ export MultiControl, CNOT, CPHASE, SWAP, H, P, Id, U,
        string2image,
        circuit2image,
        displaycircuit,
-       savecircuit
+       savecircuit,
+       @with, ScopedValue
 
 const quantikzname = "tikzlibraryquantikz.code.tex"
 const quantikzfile = joinpath(artifact"quantikz", "quantikz", quantikzname)
+
+const classicalbitslayout = ScopedValue(:compressed)
+classicalbitslayout_error() = error("`classicalbitslayout` config variable has to be either `:expanded` or `:complressed`. Instead it is `$(classicalbitslayout[])`")
 
 # This is necessary because typeof(ibegin:iend) <: AbstractRange is false
 const ArrayOrRange = Union{A,B,C} where {A<:AbstractVector, B<:EndpointRanges.EndpointUnitRange, C<:EndpointRanges.EndpointStepRange}
@@ -237,10 +242,19 @@ Measurement(is::ArrayOrRange, b::Integer) = Measurement("\\;\\;", is, b)
 affectedqubits(m::Measurement) = m.targets
 function update_table!(qtable,step,meas::Measurement)
     table = qubitsview(qtable)
+    layoutbit = if isnothing(meas.bit)
+        nothing
+    elseif classicalbitslayout[] == :expanded
+        meas.bit
+    elseif classicalbitslayout[] == :compressed
+        1
+    else
+        classicalbitslayout_error()
+    end
     if length(meas.targets) == 1
         table[meas.targets[1],step] = "\\meterD{$(meas.str)}"
-        if !isnothing(meas.bit)
-            bitsview(qtable)[meas.bit,step] = "\\cwbend{$(-(qtable.qubits-meas.targets[1])-qtable.ancillaries-meas.bit)}"
+        if !isnothing(layoutbit)
+            bitsview(qtable)[layoutbit,step] = "\\cwbend{$(-(qtable.qubits-meas.targets[1])-qtable.ancillaries-layoutbit)}"
         end
     else
         step = step+1
@@ -250,8 +264,8 @@ function update_table!(qtable,step,meas::Measurement)
         ancillaryview(qtable)[1,step-1] = "\\lstick{}"
         ancillaryview(qtable)[1,step] = "\\ctrl{$(M-qtable.qubits-1)}"
         ancillaryview(qtable)[1,step+1] = "\\meterD{}"
-        if !isnothing(meas.bit)
-            bitsview(qtable)[meas.bit,step+1] = "\\cwbend{$(1-qtable.ancillaries-meas.bit)}"
+        if !isnothing(layoutbit)
+            bitsview(qtable)[layoutbit,step+1] = "\\cwbend{$(1-qtable.ancillaries-layoutbit)}"
         end
     end
     qtable
@@ -311,8 +325,15 @@ affectedbits(g::ClassicalDecision) = g.bits
 function update_table!(qtable,step,g::ClassicalDecision)
     qvtable = qubitsview(qtable)
     bvtable = bitsview(qtable)
-    bits = explicit_targets(bvtable, g.bits)
-    startpoint = minimum(bits)
+    actualbits = explicit_targets(bvtable, g.bits)
+    layoutbits = if classicalbitslayout[] == :expanded
+        actualbits
+    elseif classicalbitslayout[] == :compressed
+        [1]
+    else
+        classicalbitslayout_error()
+    end
+    startpoint = minimum(layoutbits)
     if !isa(g.targets,AbstractVector) || length(g.targets)>0
         m, M = explicit_extrema(qvtable, g.targets)
         draw_rectangle!(qvtable,step,g.targets,g.str)
@@ -320,7 +341,7 @@ function update_table!(qtable,step,g::ClassicalDecision)
     else
         bvtable[startpoint,step] = "\\cwbend{0}"
     end
-    for b in sort(bits)[2:end]
+    for b in sort(layoutbits)[2:end]
         bvtable[b,step] = "\\cwbend{$(startpoint-b)}"
         startpoint = b
     end
@@ -391,13 +412,23 @@ function circuit2table_expanded(circuit, qubits)
         qubitsview(table)[affectedqubits(op),current_step:end] .= "\\qw"
         qubitsview(table)[deleteoutputs(op),current_step:end] .= ""
     end
-    return table
+    layoutbits = if classicalbitslayout[] == :expanded
+        table.bits
+    elseif classicalbitslayout[] == :compressed
+        1
+    else
+        classicalbitslayout_error()
+    end
+    cutoff = table.qubits+table.ancillaries+layoutbits
+    return QuantikzTable(table.table[begin:cutoff,:], table.qubits, table.ancillaries, layoutbits)
 end
 
+"""Turn implicit endpoints to explicit integer indices and take the extrema"""
 function explicit_extrema(table,r)
     t = explicit_targets(table,r)
     isempty(t) ? t : extrema(t)
 end
+"""Turn implicit endpoints to explicit integer indices"""
 function explicit_targets(table,targets)
     targets = (1:size(table,1))[targets]
 end
@@ -412,6 +443,7 @@ function circuit2table_compressed(circuit, qubits)
     filled_up_to = fill(1+PADDING,qubits)
     afilled_up_to = fill(1+PADDING,table.ancillaries)
     bfilled_up_to = fill(1+PADDING,table.bits)
+    maxbit = 0
     for op in circuit
         qubits = extrema2range(explicit_extrema(qvtable, affectedqubits(op)))
         if circuitwidthbits(op)!=0 || neededancillaries(op)!=0
@@ -422,6 +454,14 @@ function circuit2table_compressed(circuit, qubits)
             end
         end
         bits = extrema2range(explicit_extrema(bvtable, affectedbits(op)))
+        layoutbits = if isempty(bits) || classicalbitslayout[] == :expanded
+            bits
+        elseif classicalbitslayout[] == :compressed
+            [1]
+        else
+            classicalbitslayout_error()
+        end
+        maxbit = max(maxbit, layoutbits...)
         ancillaries = neededancillaries(op)
         steps = nsteps(op)
         current_step = maximum([filled_up_to[qubits]...,afilled_up_to[1:ancillaries]...,bfilled_up_to[bits]...])
@@ -429,13 +469,14 @@ function circuit2table_compressed(circuit, qubits)
         afilled_up_to[1:ancillaries] .= current_step+steps
         if circuitwidthbits(op)!=0
             filled_up_to[qubits.stop:end] .= current_step+steps
-            bfilled_up_to[bits] .= current_step+steps
+            bfilled_up_to[layoutbits] .= current_step+steps
         end
         qvtable[affectedqubits(op),current_step:end] .= "\\qw"
         qvtable[deleteoutputs(op),current_step:end] .= ""
         update_table!(table,current_step,op)
     end
-    return QuantikzTable(table.table[:,1:maximum(filled_up_to)-1+PADDING],table.qubits,table.ancillaries,table.bits)
+    cutoff = table.qubits+table.ancillaries+maxbit
+    return QuantikzTable(table.table[begin:cutoff,1:maximum(filled_up_to)-1+PADDING],table.qubits,table.ancillaries,maxbit)
 end
 
 function circuit2table(circuit, qubits; mode=:compressed, kw...)
