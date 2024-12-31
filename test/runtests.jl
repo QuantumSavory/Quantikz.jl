@@ -1,8 +1,9 @@
-using Quantikz, Test
+using Test
+using Quantikz
 using Quantikz.VendoredEndpointRanges
 const EndpointRanges = VendoredEndpointRanges
 
-function stringtests()
+function classical_expanded_stringtests()
 @testset "Misc string conversions" begin
 circuit = [
            CNOT(1,2),CPHASE(2,3),
@@ -173,5 +174,13 @@ function filetests()
 end
 end
 
-stringtests()
+function classical_compressed_stringtests()
+    @testset "Misc string conversions" begin
+        circuit = [CNOT(1,2), Measurement(1,1), Measurement(1,2), ClassicalDecision([1,2,4],[1,2,4]), ClassicalDecision(1,1), ClassicalDecision(2,2), Measurement([1,2],3)]
+        @test circuit2string(circuit, mode=:expanded) == "\\begin{quantikz}[transparent, row sep={0.8cm,between origins}]\n\\qw & \\ctrl{0} & \\meterD{} & \\meterD{} & \\gate[4,disable auto height]{\\;\\;} & \\gate[1]{\\;\\;} & \\qw & \\qw & \\gate[2,disable auto height]{\\;\\;} & \\qw & \\qw\\\\\n\\qw & \\targ{}\\vqw{-1} & \\qw & \\qw & \\qw & \\qw & \\gate[1]{\\;\\;} & \\qw & \\qw & \\qw & \\qw\\\\\n\\qw & \\qw & \\qw & \\qw & \\linethrough & \\qw & \\qw & \\qw & \\qw & \\qw & \\qw\\\\\n\\qw & \\qw & \\qw & \\qw & \\qw & \\qw & \\qw & \\qw & \\qw & \\qw & \\qw\\\\\n &  &  &  &  &  &  & \\lstick{} & \\ctrl{-3} & \\meterD{} & \\\\\n\\cw & \\cw & \\cwbend{-5} & \\cwbend{-5} & \\cwbend{-2} & \\cwbend{-5} & \\cwbend{-4} & \\cw & \\cw & \\cwbend{-1} & \\cw\n\\end{quantikz}"
+    end
+end
+
+@with Quantikz.classicalbitslayout=>:expanded classical_expanded_stringtests()
+classical_compressed_stringtests()
 filetests()
