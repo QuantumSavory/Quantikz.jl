@@ -1,7 +1,7 @@
 # Quantikz.jl
 
-[![Documentation of latest stable version](https://img.shields.io/badge/docs-stable-blue.svg)](https://quantumsavory.github.io/Quantikz.jl/stable)
-[![Documentation of dev version](https://img.shields.io/badge/docs-dev-blue.svg)](https://quantumsavory.github.io/Quantikz.jl/dev)
+[![Documentation of latest stable version](https://img.shields.io/badge/docs-stable-blue.svg)](https://doc.quantumsavory.org/Quantikz.jl/stable/)
+[![Documentation of dev version](https://img.shields.io/badge/docs-dev-blue.svg)](https://doc.quantumsavory.org/Quantikz.jl//dev)
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/QuantumSavory/Quantikz.jl/ci.yml?branch=main)](https://github.com/QuantumSavory/Quantikz.jl/actions?query=workflow%3ACI+branch%3Amain)
 [![Test coverage from codecov](https://img.shields.io/codecov/c/gh/QuantumSavory/Quantikz.jl?label=codecov)](https://codecov.io/gh/QuantumSavory/Quantikz.jl)
 
