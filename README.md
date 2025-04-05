@@ -65,7 +65,7 @@ For named controlled gates use `MultiControlU(str, controls, ocontrols, targets)
 
 For noise events, you can use `Noise(targets)` or `NoiseAll()`.
 
-For examples of these operations, see the [complete list](https://quantumsavory.github.io/Quantikz/stable/useful/).
+For examples of these operations, see the [complete list](https://quantumsavory.github.io/Quantikz.jl/stable/useful/).
 
 ## Custom objects
 
