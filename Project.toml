@@ -1,6 +1,6 @@
 name = "Quantikz"
-uuid = "b0d11df0-eea3-4d79-b4a5-421488cbf74b"
-authors = ["Stefan Krastanov <stefan@krastanov.org>"]
+uuid = "b0d11df0-eea3-4d79-b4a5-421488cbf74b"  # Keep the canonical UUID from upstream
+authors = ["Stefan Krastanov <stefan@krastanov.org>", "Avika Joshi <avikaintern@gmail.com>"]
 version = "1.4.1"
 
 [deps]
@@ -9,7 +9,8 @@ Ghostscript_jll = "61579ee1-b43e-5ca0-a5da-69d92c66a64b"
 ImageMagick = "6218d12a-5da1-5696-b52f-db25d2ecc6d1"
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 tectonic_jll = "d7dd28d6-a5e6-559c-9131-7eb760cdacc5"
-
+CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
 
 [compat]
 FileIO = "1.6"
@@ -17,3 +18,5 @@ Ghostscript_jll = "9.53"
 ImageMagick = "1.1"
 julia = "1.11"
 tectonic_jll = "0.11, 0.12, 0.13, 0.14, 0.15"
+CairoMakie = "0.13.5"
+Revise = "3.7.6"

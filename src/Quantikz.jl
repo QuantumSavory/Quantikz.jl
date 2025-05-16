@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 """
 A module for drawing quantum circuits through the Quantikz latex package.
 """
@@ -575,5 +576,19 @@ function savetex(circuit,qubits,filename; kw...)
     print(f,string)
     close(f)
 end
+=======
+module Quantikz
+
+include("gates.jl")
+include("circuit.jl")
+include("core.jl")
+include("visualize/MakiePlot.jl")
+
+using .Gates
+using .CircuitModule
+using .Visualize
+
+export circuit, Circuit, put!, draw  # <--- make sure these are exported
+>>>>>>> 94eb55c (Add Makie-based visualization module)
 
 end
