@@ -45,7 +45,7 @@ qtable.table
 
 And after modifications, the table can be turned into a tex string
 
-```@exampl 1
+```@example 1
 table2string(qtable)
 ```
 
