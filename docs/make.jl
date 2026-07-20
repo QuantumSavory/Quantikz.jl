@@ -20,6 +20,7 @@ pages = [
 )
 
 deploydocs(
-    repo = "github.com/QuantumSavory/Quantikz.git",
+    repo = "github.com/QuantumSavory/Quantikz.jl.git",
     devbranch = "main",
+    push_preview = true,
 )
