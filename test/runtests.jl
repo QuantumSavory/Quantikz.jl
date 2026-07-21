@@ -162,15 +162,15 @@ function filetests()
     @test savecircuit(c1,10,"c1.png",scale=0.5) === nothing # just check that it runs at all
     @test savecircuit(c2,"c2.png",scale=1) === nothing # just check that it runs at all
     @test savecircuit(c3,"c3.png",scale=5) === nothing # just check that it runs at all
-    rm("c1.tex")
-    rm("c2.tex")
-    rm("c3.tex")
-    rm("c1.pdf")
-    rm("c2.pdf")
-    rm("c3.pdf")
-    rm("c1.png")
-    rm("c2.png")
-    rm("c3.png")
+    rm("c1.tex"; force=true)
+    rm("c2.tex"; force=true)
+    rm("c3.tex"; force=true)
+    rm("c1.pdf"; force=true)
+    rm("c2.pdf"; force=true)
+    rm("c3.pdf"; force=true)
+    rm("c1.png"; force=true)
+    rm("c2.png"; force=true)
+    rm("c3.png"; force=true)
 end
 end
 
