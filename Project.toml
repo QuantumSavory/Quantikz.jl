@@ -7,13 +7,14 @@ version = "1.4.1"
 FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
 Ghostscript_jll = "61579ee1-b43e-5ca0-a5da-69d92c66a64b"
 ImageMagick = "6218d12a-5da1-5696-b52f-db25d2ecc6d1"
+ImageMagick_jll = "c73af94c-d91f-53ed-93a7-00f77d67a9d7"
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 tectonic_jll = "d7dd28d6-a5e6-559c-9131-7eb760cdacc5"
-
 
 [compat]
 FileIO = "1.17"
 Ghostscript_jll = "9.53"
 ImageMagick = "1.4"
+ImageMagick_jll = "7.1.2002"
 julia = "1.11"
 tectonic_jll = "0.15"
