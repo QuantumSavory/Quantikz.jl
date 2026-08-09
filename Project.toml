@@ -13,8 +13,8 @@ tectonic_jll = "d7dd28d6-a5e6-559c-9131-7eb760cdacc5"
 
 [compat]
 FileIO = "1.17"
-Ghostscript_jll = "9.53"
-ImageMagick = "1.4"
+Ghostscript_jll = "9.55.1"
+ImageMagick = "1.4.2"
 ImageMagick_jll = "7.1.2002"
 julia = "1.11"
 tectonic_jll = "0.15, 0.16"
